@@ -185,7 +185,7 @@ public final class Main {
    * Main.
    */
   public static void main(String... args) {
-    System.err.println("TEAM 281 CODE");
+    System.err.println("TEAM 281 CODE UPDATED JUST NOW");
     if (args.length > 0) {
       configFile = args[0];
     }
@@ -225,10 +225,11 @@ public final class Main {
 
     VisionRunner runner = new VisionRunner(source, new GripPipeline(), processed -> {
       GripPipeline gp = (GripPipeline)processed;
-      cvsource.putFrame(gp.cvCannyOutput());
+      cvsource.putFrame(gp.hslThresholdOutput());
     });
     runner.runForever();
     // loop forever
+    
     for (;;) {
       try {
         Thread.sleep(10000);
