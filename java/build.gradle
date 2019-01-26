@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '4.0.3' apply false
+	  id 'org.hidetake.ssh' version '2.9.0'
+}
+
+mainClassName = 'Main'
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs '/usr/local/frc/java', 'lib'
+    }
+}
+
+remotes {
+  pi {
+    role 'pi'
+    host = 'frcvision.local'
+    user = 'pi'
+    password="raspberry"
+  }
+}
+
+dependencies {
+    compile 'com.google.code.gson:gson:2.8.5'
+
+    compile name: 'wpiutil'
+    compile name: 'ntcore'
+    compile name: 'cscore'
+    compile name: 'cameraserver'
+    compile name: 'opencv-344'
+}
+
+wrapper {
+    gradleVersion = '5.0'
+}
+
+task deploy {
+  doLast {
+    ssh.run {
+      session(remotes.role('pi')) {
+        execute 'sudo /bin/mount -o remount,rw / && sudo /bin/mount -o remount,rw /boot'
+        put from: "${project.buildDir}/libs/java-all.jar", into: '/home/pi/'
+        put from: "${project.projectDir}/runCamera", into: '/home/pi'
+        execute 'sudo /bin/mount -o remount,ro / && sudo /bin/mount -o remount,ro /boot'
+        execute 'sudo svc -t /service/camera'
+      }
+    }
+  }
+}
