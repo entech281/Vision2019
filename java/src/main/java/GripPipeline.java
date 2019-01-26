@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,8 @@ public class GripPipeline implements VisionPipeline {
 		// Step MinAreaRect
 		ArrayList<RotatedRect> VisionTargets = new ArrayList<RotatedRect>();
 		minimumBoundingRectangle(filterContoursOutput, VisionTargets);
+
+		
 		output = putFrameWithVisionTargets(outputImg, VisionTargets);
 	}
 
@@ -84,12 +87,25 @@ public class GripPipeline implements VisionPipeline {
 
 	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l){
 		Point points[] = new Point[4];
+		var centers = new ArrayList<Point>();
+
 		for(RotatedRect r:l){
+			centers.add(r.center);
 			r.points(points);
 			for( int i = 0; i<4; i++){
-				Imgproc.line(img, points[i], points[(i+1)%4], new Scalar(255, 0, 0));
+				Imgproc.line(img, points[i], points[(i+1)%4], new Scalar(255, 0, 0), 5);
 			}
+			
 		}
+
+		if(centers.size()==2){
+			Imgproc.line(img, centers.get(0), centers.get(1), new Scalar(0, 255, 0), 6);
+			Point midpoint = new Point(100,200);
+			DecimalFormat df = new DecimalFormat("#, ###.##");
+			String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
+			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);;
+		}
+		
 		return img;
 	}
 	/**
