@@ -13,29 +13,98 @@ public class ConvertRectToPoint {
         var allpoints = new ArrayList<Point>();
         var firstpoints = new ArrayList<Point>();
         var secondpoints = new ArrayList<Point>();
-        firstpoints = getPointsFromRect(first);
-        secondpoints = getPointsFromRect(second);
+    
         if (isFirstLeftMost(first, second)){
+            firstpoints = getPointsFromLeftRect(first);
+            secondpoints = getPointsFromRightRect(second);
             allpoints.addAll(firstpoints);
             allpoints.addAll(secondpoints);
         }
         else{
+            firstpoints = getPointsFromLeftRect(second);
+            secondpoints = getPointsFromRightRect(first);
             allpoints.addAll(secondpoints);
             allpoints.addAll(firstpoints);
         }
         return allpoints;
     }
-    public ArrayList <Point> getPointsFromRect(RotatedRect first){
+
+
+    public ArrayList <Point> getPointsFromLeftRect(RotatedRect first){
         var arraypoints = new ArrayList<Point>();
-        double translationTop = (first.size.width/2)/(Math.sin(first.angle));
-        double translationHorizontal= first.size.height*Math.cos(90-first.angle);
-        double translationVertical = first.size.width/2-first.size.height*Math.sin(90-first.angle);
-        double translationBottom = -(first.size.width/2)/(Math.sin(first.angle));
-        //Starts at top point and goes clockwise
-        arraypoints.add(new Point(first.center.x,first.center.y + translationTop));
-        arraypoints.add(new Point(first.center.x + translationHorizontal,first.center.y + translationVertical));
-        arraypoints.add(new Point(first.center.x,first.center.y + translationBottom));
-        arraypoints.add(new Point(first.center.x-translationHorizontal,first.center.y - translationVertical));
+        
+        double h=first.size.width;
+        double w=first.size.height;
+        double hyp = Math.sqrt(h*h + w*w);
+        double c= Math.PI/180;
+        double total_angle_radian=first.angle+Math.asin(w/h);
+        double angle_radian = first.angle;
+
+        //angle of rotated rect is in refrence to vertical
+
+        double first_x=first.center.x+Math.sin(total_angle_radian)*hyp/2;
+        double first_y=first.center.y-Math.cos(total_angle_radian)*hyp/2;
+
+        //Starts at rightmost point and goes clockwise ending at uppermost point
+
+        arraypoints.add(new Point(first_x, first_y));
+        arraypoints.add(
+            new Point(
+                first_x-w*Math.sin(angle_radian), 
+                first_y+w*Math.cos(angle_radian)
+                )
+            );
+        arraypoints.add(
+            new Point(
+                first_x-hyp*Math.sin(total_angle_radian), 
+                first_y+hyp*Math.cos(total_angle_radian)
+                )
+            );
+        arraypoints.add(
+            new Point(
+                first_x-h*Math.sin(angle_radian), 
+                first_y-h*Math.cos(angle_radian)
+                )
+            );
+        return arraypoints;
+    } 
+
+    public ArrayList <Point> getPointsFromRightRect(RotatedRect first){
+        var arraypoints = new ArrayList<Point>();
+        
+        double h=first.size.width;
+        double w=first.size.height;
+        double hyp = Math.sqrt(h*h + w*w);
+        double c= Math.PI/180;
+        double total_angle_radian=first.angle+Math.asin(w/h);
+        double angle_radian = first.angle;
+
+        //angle of rotated rect is in refrence to vertical
+
+        double first_x=first.center.x-Math.sin(total_angle_radian)*hyp/2;
+        double first_y=first.center.y-Math.cos(total_angle_radian)*hyp/2;
+
+        //Starts at rightmost point and goes clockwise ending at uppermost point
+
+        arraypoints.add(new Point(first_x, first_y));
+        arraypoints.add(
+            new Point(
+                first_x+w*Math.sin(angle_radian), 
+                first_y+w*Math.cos(angle_radian)
+                )
+            );
+        arraypoints.add(
+            new Point(
+                first_x+hyp*Math.sin(total_angle_radian), 
+                first_y+hyp*Math.cos(total_angle_radian)
+                )
+            );
+        arraypoints.add(
+            new Point(
+                first_x+h*Math.sin(angle_radian), 
+                first_y-h*Math.cos(angle_radian)
+                )
+            );
         return arraypoints;
     } 
 
