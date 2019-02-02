@@ -81,8 +81,9 @@ public class GripPipeline implements VisionPipeline {
 		rvec = CameraConstants.getRvec();
 		Mat tvec = new Mat();
 		tvec = CameraConstants.getTvec();
-		Calib3d.solvePnP(CameraConstants.getObjectPoints(), CameraConstants.getImgPoint(VisionTargets), CameraConstants.getCameraMatrix(), CameraConstants.getDistCoeffs(), rvec, tvec, true);
-		
+		if (VisionTargets.size()==2){
+			Calib3d.solvePnP(CameraConstants.getObjectPoints(), CameraConstants.getImgPoint(VisionTargets), CameraConstants.getCameraMatrix(), CameraConstants.getDistCoeffs(), rvec, tvec, true);
+		}	
 		output = putFrameWithVisionTargets(outputImg, VisionTargets, rvec, tvec);
 	}
 	
@@ -236,6 +237,7 @@ public class GripPipeline implements VisionPipeline {
 		var VisionTarget = new ArrayList<RotatedRect>();
 
 		for (MatOfPoint contour: inputContours){
+			System.out.print("look here");
 			VisionTarget.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
 		}
 		return VisionTarget;
