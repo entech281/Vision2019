@@ -12,6 +12,7 @@ import java.util.HashMap;
 
 import edu.wpi.first.vision.VisionPipeline;
 
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.core.Core.*;
 import org.opencv.features2d.FeatureDetector;
@@ -73,11 +74,18 @@ public class GripPipeline implements VisionPipeline {
 		
 		// Step MinAreaRect
 		ArrayList<RotatedRect> VisionTargets = new ArrayList<RotatedRect>();
-		minimumBoundingRectangle(filterContoursOutput, VisionTargets);
+		VisionTargets=minimumBoundingRectangle(filterContoursOutput);
 
+		//SolvePnp Implementation
+		Mat rvec = new Mat();
+		rvec = CameraConstants.getRvec();
+		Mat tvec = new Mat();
+		tvec = CameraConstants.getTvec();
+		Calib3d.solvePnP(CameraConstants.getObjectPoints(), CameraConstants.getImgPoint(VisionTargets), CameraConstants.getCameraMatrix(), CameraConstants.getDistCoeffs(), rvec, tvec, true);
 		
-		output = putFrameWithVisionTargets(outputImg, VisionTargets);
+		output = putFrameWithVisionTargets(outputImg, VisionTargets, rvec, tvec);
 	}
+	
 
 	/**
 	 * This method is a generated getter for the output of a HSL_Threshold.
@@ -87,7 +95,7 @@ public class GripPipeline implements VisionPipeline {
 		return output;
 	}
 
-	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l){
+	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l, Mat rvec, Mat tvec){
 		Point points[] = new Point[4];
 		var centers = new ArrayList<Point>();
 
@@ -102,10 +110,20 @@ public class GripPipeline implements VisionPipeline {
 
 		if(centers.size()==2){
 			Imgproc.line(img, centers.get(0), centers.get(1), new Scalar(0, 255, 0), 6);
+			
 			Point midpoint = new Point(100,200);
+			Point rot = new Point(250, 50);
+			Point trans = new Point(250, 100);
+
 			DecimalFormat df = new DecimalFormat("#, ###.##");
 			String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
-			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);;
+			String translation = tvec.toString();
+			String rotation = rvec.toString();
+			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);
+			Imgproc.putText(img, "Translation" +translation, trans, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);
+			Imgproc.putText(img, "Rotation" + rotation, rot, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);
+			
+
 		}
 		
 		return img;
@@ -213,13 +231,14 @@ public class GripPipeline implements VisionPipeline {
 			output.add(contour);
 		}
 	}
-	private void minimumBoundingRectangle(List<MatOfPoint> inputContours, List<RotatedRect> outputList){
+	public static ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours){
 		
-		
+		var VisionTarget = new ArrayList<RotatedRect>();
 
 		for (MatOfPoint contour: inputContours){
-			outputList.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
+			VisionTarget.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
 		}
+		return VisionTarget;
 
 	}
 

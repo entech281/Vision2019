@@ -34,6 +34,10 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionRunner;
 
+import frc.robot.CameraConstants;
+import frc.robot.ConvertRectToPoint;
+import frc.robot.GripPipeline;
+
 /*
    JSON format:
    {
@@ -208,6 +212,8 @@ public final class Main {
       System.out.println("EDITED:Setting up NetworkTables client for team " + team);
       ntinst.startClientTeam(team);
     }
+    
+    
 
     // start cameras
     List<VideoSource> cameras = new ArrayList<>();
@@ -242,25 +248,5 @@ public final class Main {
       }
     }
   }
-	/*protected void calculateExtrinsics(Mat camMatrix, MatOfDouble distCoeffs){
-		// TODO check params
-		
-		// set the obj 3D points
-    var objPoints = new Point[8];
-    var imgPoints = ConvertRectToPoint.getOrderedPoints(first, second);
-    objPoints[0]=new Point();
-    objPoints[1]=new Point();
-    objPoints[2]=new Point();
-    objPoints[3]=new Point();
-    objPoints[4]=new Point();
-    objPoints[5]=new Point();
-    objPoints[6]=new Point();
-    objPoints[7]=new Point();
 
-		MatOfPoint3f objPointsMat = new MatOfPoint3f();
-    objPointsMat.fromList(objPoints);
-    
-		Calib3d.solvePnP(objPointsMat, this, camMatrix, distCoeffs, Rvec, Tvec);
-
-	}*/
 }
