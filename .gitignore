@@ -2,3 +2,4 @@ build
 bin
 *.pyc
 __pycache__
+.gradle

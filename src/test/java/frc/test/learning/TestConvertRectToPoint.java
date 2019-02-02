@@ -1,4 +1,4 @@
-package frc.team281.test.learning;
+package frc.test.learning;
 
 import java.util.Arrays;
 
@@ -7,7 +7,7 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 
-import frc.team281.robot.ConvertRectToPoint;
+import frc.robot.ConvertRectToPoint;
 
 
 public class TestConvertRectToPoint {
