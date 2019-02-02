@@ -17,7 +17,7 @@ public class TestConvertRectToPoint {
         
         Point center1 = new Point(4,5);
         Size s1 = new Size(4, 8);
-        double a1 = Math.PI/4;
+        double a1 = 45;
         
 
         RotatedRect rect1 = new RotatedRect(center1, s1, a1);

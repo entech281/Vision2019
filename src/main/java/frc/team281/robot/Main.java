@@ -1,4 +1,6 @@
 package frc.team281.robot;
+
+import java.awt.Point;
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
@@ -17,6 +19,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point3;
 
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
@@ -234,4 +242,25 @@ public final class Main {
       }
     }
   }
+	/*protected void calculateExtrinsics(Mat camMatrix, MatOfDouble distCoeffs){
+		// TODO check params
+		
+		// set the obj 3D points
+    var objPoints = new Point[8];
+    var imgPoints = ConvertRectToPoint.getOrderedPoints(first, second);
+    objPoints[0]=new Point();
+    objPoints[1]=new Point();
+    objPoints[2]=new Point();
+    objPoints[3]=new Point();
+    objPoints[4]=new Point();
+    objPoints[5]=new Point();
+    objPoints[6]=new Point();
+    objPoints[7]=new Point();
+
+		MatOfPoint3f objPointsMat = new MatOfPoint3f();
+    objPointsMat.fromList(objPoints);
+    
+		Calib3d.solvePnP(objPointsMat, this, camMatrix, distCoeffs, Rvec, Tvec);
+
+	}*/
 }
