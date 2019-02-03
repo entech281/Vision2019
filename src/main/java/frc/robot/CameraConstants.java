@@ -49,17 +49,21 @@ public class CameraConstants {
 
     public static MatOfDouble getDistCoeffs() {
         MatOfDouble distCoeffs = new MatOfDouble();
-        distCoeffs.zeros(1, 4, CvType.CV_32F);
+        //distCoeffs.zeros(1, 4, CvType.CV_32F);
         return distCoeffs;
     }
 
     public static Mat getCameraMatrix() {
-        MatOfDouble cameraMat = new MatOfDouble();
-        cameraMat.zeros(3, 3, CvType.CV_32F);
-        cameraMat.put(0, 0, 320.0);
-        cameraMat.put(1, 1, 240.0);
-        cameraMat.put(0, 2, 160.0);
-        cameraMat.put(1, 2, 120.0);
+        Mat cameraMat = new Mat(3,3,CvType.CV_32FC1);
+
+        cameraMat.put(0, 0,320.0, 0.0, 160.0, 
+                      0.0, 240.0, 120.0, 
+                    0.0, 0.0, 1.0 );
+
+        //cameraMat.put(0, 0, 320.0);
+        //cameraMat.put(1, 1, 240.0);
+        //cameraMat.put(0, 2, 160.0);
+        //cameraMat.put(1, 2, 120.0);
         
         return cameraMat;
     }
@@ -78,4 +82,6 @@ public class CameraConstants {
         tvec.put(2, 0, 30.0);
         return tvec;
     }
+
+
 }

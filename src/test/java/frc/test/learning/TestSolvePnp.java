@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
@@ -19,8 +20,17 @@ import frc.robot.ConvertRectToPoint;
 
 
 public class TestSolvePnp {
-    
+
+    static {
+        //OpenCV.loadLibrary();
+        System.out.println("java.library.path=" + System.getProperty("java.library.path"));
+        System.out.println("Core lib name=" + Core.NATIVE_LIBRARY_NAME);
+        System.loadLibrary( Core.NATIVE_LIBRARY_NAME);
+    }
+
+    @Test
     public void TestValidResponse(){
+        
         MatOfPoint3f objectPoints = new MatOfPoint3f();
         objectPoints = CameraConstants.getObjectPoints();
 
@@ -31,8 +41,8 @@ public class TestSolvePnp {
         cameraMat = CameraConstants.getCameraMatrix();
 
         Point center1 = new Point(100,120);
-        Point center2 = new Point(220,120);
-        Size size = new Size(60, 165);
+        Point center2 = new Point(120,120);
+        Size size = new Size(5, 10);
         double a1 = 14;
         double a2 = -14;
         
@@ -49,7 +59,7 @@ public class TestSolvePnp {
 
         Calib3d.solvePnP(objectPoints, imgPoint, cameraMat, distCoeff, rvec, tvec, true);
 
-        System.out.print(rvec);
-        System.out.print(tvec);
+        System.out.print("RVEC=" + rvec.dump());
+        System.out.print("\nTVEC=" + tvec.dump());
     } 
 } 
