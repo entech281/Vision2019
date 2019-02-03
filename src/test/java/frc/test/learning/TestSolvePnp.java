@@ -28,7 +28,6 @@ public class TestSolvePnp {
         System.loadLibrary( Core.NATIVE_LIBRARY_NAME);
     }
 
-    @Test
     public void TestValidResponse(){
         
         MatOfPoint3f objectPoints = new MatOfPoint3f();
