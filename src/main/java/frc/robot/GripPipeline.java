@@ -34,6 +34,7 @@ public class GripPipeline implements VisionPipeline {
 	private Mat output = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
+	private int outputCounter=0;
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -44,7 +45,7 @@ public class GripPipeline implements VisionPipeline {
 	 */
 	@Override	public void process(Mat source0) {
 		// Step HSL_Threshold0:
-
+		outputCounter++;
 		Mat outputImg = source0;
 		Mat hslThresholdInput = source0;
 		double[] hslThresholdHue = {0.0, 180.0};
@@ -108,25 +109,17 @@ public class GripPipeline implements VisionPipeline {
 			}
 			
 		}
-
+		DecimalFormat df = new DecimalFormat("#, ###.##");
 		if(centers.size()==2){
 			Imgproc.line(img, centers.get(0), centers.get(1), new Scalar(0, 255, 0), 6);
-			
 			Point midpoint = new Point(100,200);
-			Point rot = new Point(250, 50);
-			Point trans = new Point(250, 100);
-
-			DecimalFormat df = new DecimalFormat("#, ###.##");
 			String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
-			String translation = tvec.toString();
-			String rotation = rvec.toString();
-			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);
-			Imgproc.putText(img, "Translation" +translation, trans, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);
-			Imgproc.putText(img, "Rotation" + rotation, rot, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);
-			
-
+			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
 		}
 		
+			Imgproc.putText(img, "Rotation (x,y,z)"+ rvec.dump(), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
+			Imgproc.putText(img, "Translation (x,y,z)" + tvec.dump(), new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
+
 		return img;
 	}
 	/**
@@ -237,7 +230,6 @@ public class GripPipeline implements VisionPipeline {
 		var VisionTarget = new ArrayList<RotatedRect>();
 
 		for (MatOfPoint contour: inputContours){
-			System.out.print("look here");
 			VisionTarget.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
 		}
 		return VisionTarget;

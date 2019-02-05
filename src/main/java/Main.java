@@ -178,7 +178,7 @@ public final class Main {
    * Start running the camera.
    */
   public static VideoSource startCamera(CameraConfig config) {
-    System.out.println("Starting camera '" + config.name + "' on " + config.path);
+    //System.out.println("Starting camera '" + config.name + "' on " + config.path);
     VideoSource camera = CameraServer.getInstance().startAutomaticCapture(
         config.name, config.path);
 
@@ -193,7 +193,7 @@ public final class Main {
    * Main.
    */
   public static void main(String... args) {
-    System.err.println("TEAM 281 CODE UPDATED JUST ARYAN");
+    System.err.println("TEAM 281 CODE UPDATED JUST ENTECH");
     if (args.length > 0) {
       configFile = args[0];
     }
@@ -207,10 +207,10 @@ public final class Main {
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
       System.out.println("EDITED:Setting up NetworkTables server");
-      ntinst.startServer();
+      //ntinst.startServer();
     } else {
       System.out.println("EDITED:Setting up NetworkTables client for team " + team);
-      ntinst.startClientTeam(team);
+     // ntinst.startClientTeam(team);
     }
     
     
