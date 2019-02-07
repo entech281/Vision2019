@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
 
 import org.opencv.calib3d.Calib3d;
@@ -37,6 +40,10 @@ public class GripPipeline implements VisionPipeline {
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
 	private int outputCounter=0;
+	private NetworkTableInstance ntist = NetworkTableInstance.getDefault();
+	private NetworkTableEntry vision = ntist.getEntry("team281.Vision");
+	
+	
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -84,16 +91,11 @@ public class GripPipeline implements VisionPipeline {
 		rvec = CameraConstants.getRvec();
 		Mat tvec = new Mat();
 		tvec = CameraConstants.getTvec();
-		Mat CameraPosPnp = new Mat(3,1,CvType.CV_64FC1);
-		Mat rotT = new Mat(3,3,CvType.CV_64FC1);
-		Mat rot = new Mat(3,3,CvType.CV_64FC1);
+
 		if (VisionTargets.size()==2){
 			Calib3d.solvePnP(CameraConstants.getObjectPoints(), CameraConstants.getImgPoint(VisionTargets), CameraConstants.getCameraMatrix(), CameraConstants.getDistCoeffs(), rvec, tvec, true);
-			Calib3d.Rodrigues(rvec, rot);
-			rotT=rot.t();
-			CameraPosPnp = rotT.mul(tvec);
 		}	
-		output = putFrameWithVisionTargets(outputImg, VisionTargets, CameraPosPnp, tvec);
+		output = putFrameWithVisionTargets(outputImg, VisionTargets, rvec, tvec);
 	}
 	
 
@@ -105,7 +107,7 @@ public class GripPipeline implements VisionPipeline {
 		return output;
 	}
 
-	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l, Mat CameraPosPnp, Mat tvec){
+	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l, Mat rvec, Mat tvec){
 		Point points[] = new Point[4];
 		var centers = new ArrayList<Point>();
 
@@ -124,27 +126,12 @@ public class GripPipeline implements VisionPipeline {
 			String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
 			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
 		}
-		double [] x1 = CameraPosPnp.get(0, 0);
-		double x = x1[0];
-		double [] y1 = CameraPosPnp.get(1, 0);
-		double y = y1[0];
-		double [] z1 = CameraPosPnp.get(2, 0);
-		double z = z1[0];
+		double [] distance_from_target = tvec.get(2, 0);
+		double dist_from_target = distance_from_target[0];
+		
+		vision.forceSetDouble(dist_from_target);
 
-		Imgproc.putText(img, df.format(x), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-		Imgproc.putText(img, df.format(y), new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-		Imgproc.putText(img, df.format(z), new Point(20, 50), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-
-		//double[] rv = rvec.get(1, 0);
-		//double ry = rv[0];
-		//double[] tx = tvec.get(0, 0);
-		//double tx1 = tx[0];
-		//double[] tz = tvec.get(2, 0);
-		//double tz1 = tz[0];
-
-			//Imgproc.putText(img, df.format(ry)/*String.format("Ry=%0.2f" , ry)*/, new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-			//Imgproc.putText(img, df.format(tx1)/*String.format("Tx=%0.2f", tx1)*/, new Point(20, 30), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-			//Imgproc.putText(img, df.format(tz1)/*String.format("Tz=%0.2f", tz1)*/, new Point(20, 50), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
+		Imgproc.putText(img, df.format(dist_from_target), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
 
 		return img;
 	}

@@ -207,10 +207,9 @@ public final class Main {
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
       System.out.println("EDITED:Setting up NetworkTables server");
-      //ntinst.startServer();
-    } else {
+      } else {
       System.out.println("EDITED:Setting up NetworkTables client for team " + team);
-     // ntinst.startClientTeam(team);
+      ntinst.startClientTeam(team);
     }
     
     
