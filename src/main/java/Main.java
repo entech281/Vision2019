@@ -1,4 +1,6 @@
-package frc.team281.robot;
+
+
+import java.awt.Point;
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
@@ -18,6 +20,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point3;
+
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.VideoMode;
@@ -25,6 +33,10 @@ import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionRunner;
+
+import frc.robot.CameraConstants;
+import frc.robot.ConvertRectToPoint;
+import frc.robot.GripPipeline;
 
 /*
    JSON format:
@@ -166,7 +178,7 @@ public final class Main {
    * Start running the camera.
    */
   public static VideoSource startCamera(CameraConfig config) {
-    System.out.println("Starting camera '" + config.name + "' on " + config.path);
+    //System.out.println("Starting camera '" + config.name + "' on " + config.path);
     VideoSource camera = CameraServer.getInstance().startAutomaticCapture(
         config.name, config.path);
 
@@ -181,7 +193,7 @@ public final class Main {
    * Main.
    */
   public static void main(String... args) {
-    System.err.println("TEAM 281 CODE UPDATED JUST NOW");
+    System.err.println("TEAM 281 CODE UPDATED JUST ENTECH");
     if (args.length > 0) {
       configFile = args[0];
     }
@@ -195,11 +207,12 @@ public final class Main {
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
       System.out.println("EDITED:Setting up NetworkTables server");
-      ntinst.startServer();
-    } else {
+      } else {
       System.out.println("EDITED:Setting up NetworkTables client for team " + team);
       ntinst.startClientTeam(team);
     }
+    
+    
 
     // start cameras
     List<VideoSource> cameras = new ArrayList<>();
@@ -234,4 +247,5 @@ public final class Main {
       }
     }
   }
+
 }

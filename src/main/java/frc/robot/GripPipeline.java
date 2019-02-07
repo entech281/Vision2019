@@ -1,4 +1,4 @@
-package frc.team281.robot;
+package frc.robot;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,14 +10,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
 
+import org.opencv.calib3d.Calib3d;
+import org.opencv.calib3d.Calib3d.*;
 import org.opencv.core.*;
 import org.opencv.core.Core.*;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.*;
 import org.opencv.objdetect.*;
+
 
 /**
 * GripPipeline class.
@@ -33,6 +39,11 @@ public class GripPipeline implements VisionPipeline {
 	private Mat output = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
+	private int outputCounter=0;
+	private NetworkTableInstance ntist = NetworkTableInstance.getDefault();
+	private NetworkTableEntry vision = ntist.getEntry("team281.Vision");
+	
+	
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -43,7 +54,7 @@ public class GripPipeline implements VisionPipeline {
 	 */
 	@Override	public void process(Mat source0) {
 		// Step HSL_Threshold0:
-
+		outputCounter++;
 		Mat outputImg = source0;
 		Mat hslThresholdInput = source0;
 		double[] hslThresholdHue = {0.0, 180.0};
@@ -73,11 +84,20 @@ public class GripPipeline implements VisionPipeline {
 		
 		// Step MinAreaRect
 		ArrayList<RotatedRect> VisionTargets = new ArrayList<RotatedRect>();
-		minimumBoundingRectangle(filterContoursOutput, VisionTargets);
+		VisionTargets=minimumBoundingRectangle(filterContoursOutput);
 
-		
-		output = putFrameWithVisionTargets(outputImg, VisionTargets);
+		//SolvePnp Implementation
+		Mat rvec = new Mat();
+		rvec = CameraConstants.getRvec();
+		Mat tvec = new Mat();
+		tvec = CameraConstants.getTvec();
+
+		if (VisionTargets.size()==2){
+			Calib3d.solvePnP(CameraConstants.getObjectPoints(), CameraConstants.getImgPoint(VisionTargets), CameraConstants.getCameraMatrix(), CameraConstants.getDistCoeffs(), rvec, tvec, true);
+		}	
+		output = putFrameWithVisionTargets(outputImg, VisionTargets, rvec, tvec);
 	}
+	
 
 	/**
 	 * This method is a generated getter for the output of a HSL_Threshold.
@@ -87,7 +107,7 @@ public class GripPipeline implements VisionPipeline {
 		return output;
 	}
 
-	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l){
+	public Mat putFrameWithVisionTargets( Mat img, List<RotatedRect> l, Mat rvec, Mat tvec){
 		Point points[] = new Point[4];
 		var centers = new ArrayList<Point>();
 
@@ -99,15 +119,20 @@ public class GripPipeline implements VisionPipeline {
 			}
 			
 		}
-
+		DecimalFormat df = new DecimalFormat("#, ###.##");
 		if(centers.size()==2){
 			Imgproc.line(img, centers.get(0), centers.get(1), new Scalar(0, 255, 0), 6);
 			Point midpoint = new Point(100,200);
-			DecimalFormat df = new DecimalFormat("#, ###.##");
 			String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
-			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0), 4);;
+			Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
 		}
+		double [] distance_from_target = tvec.get(2, 0);
+		double dist_from_target = distance_from_target[0];
 		
+		vision.forceSetDouble(dist_from_target);
+
+		Imgproc.putText(img, df.format(dist_from_target), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
+
 		return img;
 	}
 	/**
@@ -213,13 +238,14 @@ public class GripPipeline implements VisionPipeline {
 			output.add(contour);
 		}
 	}
-	private void minimumBoundingRectangle(List<MatOfPoint> inputContours, List<RotatedRect> outputList){
+	public static ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours){
 		
-		
+		var VisionTarget = new ArrayList<RotatedRect>();
 
 		for (MatOfPoint contour: inputContours){
-			outputList.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
+			VisionTarget.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
 		}
+		return VisionTarget;
 
 	}
 
