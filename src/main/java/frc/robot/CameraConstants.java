@@ -56,8 +56,8 @@ public class CameraConstants {
     public static Mat getCameraMatrix() {
         Mat cameraMat = new Mat(3,3,CvType.CV_32FC1);
 
-        cameraMat.put(0, 0,320.0, 0.0, 160.0, 
-                      0.0, 240.0, 120.0, 
+        cameraMat.put(0, 0,640.0, 0.0, 320.0, 
+                      0.0, 480.0, 240.0, 
                     0.0, 0.0, 1.0 );
 
         //cameraMat.put(0, 0, 320.0);

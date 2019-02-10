@@ -36,8 +36,11 @@ import edu.wpi.first.vision.VisionRunner;
 
 import frc.robot.CameraConstants;
 import frc.robot.ConvertRectToPoint;
+import frc.robot.DoNothingPipeline;
 import frc.robot.GripPipeline;
-
+import frc.robot.DCGripPipeline;
+import frc.robot.VisionProcessor;
+import frc.robot.VisionReporter;
 /*
    JSON format:
    {
@@ -212,29 +215,35 @@ public final class Main {
       ntinst.startClientTeam(team);
     }
     
-    
-
     // start cameras
     List<VideoSource> cameras = new ArrayList<>();
     for (CameraConfig cameraConfig : cameraConfigs) {
       cameras.add(startCamera(cameraConfig));
     }
 
-
     // start image processing on camera 0 if present
     VideoSource source = cameras.get(0);
-
-
+    
     MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
 
     CvSource cvsource = new CvSource("processed",
-        VideoMode.PixelFormat.kMJPEG, 320, 240, 30);
+        VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
 
     rawVideoServer.setSource(cvsource);   
+    VisionReporter reporter = new VisionReporter();
+   
+    VisionRunner runner = new VisionRunner(source, new VisionProcessor( new DCGripPipeline()), processed -> {
+        
+        try{
+            VisionProcessor processor = (VisionProcessor)processed;            
+            reporter.reportDistance(processor.getDistanceFromTarget());
+            cvsource.putFrame(processor.getLastFrame());              
+        }
+        catch ( Exception ex){
+            ex.printStackTrace();
+        }
 
-    VisionRunner runner = new VisionRunner(source, new GripPipeline(), processed -> {
-      GripPipeline gp = (GripPipeline)processed;
-      cvsource.putFrame(gp.hslThresholdOutput());
+
     });
     runner.runForever();
     // loop forever
