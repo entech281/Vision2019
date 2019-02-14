@@ -1,12 +1,13 @@
 {
     "cameras": [
         {
-            "brightness": 19,
+            "brightness": 70,
             "fps": 30,
             "height": 480,
             "name": "rPi Camera 0",
             "path": "/dev/video0",
             "pixel format": "mjpeg",
+            "exposure": 13,
             "properties": [
                 {
                     "name": "connect_verbose",
@@ -18,7 +19,7 @@
                 },
                 {
                     "name": "saturation",
-                    "value": 13
+                    "value": 76
                 },
                 {
                     "name": "red_balance",
@@ -86,7 +87,7 @@
                 },
                 {
                     "name": "exposure_time_absolute",
-                    "value": 120
+                    "value": 13
                 },
                 {
                     "name": "exposure_dynamic_framerate",

@@ -36,8 +36,8 @@ public class VisionProcessor implements VisionPipeline{
         parent.process(sourceFrame);
 
         System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
-        //System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
-        ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.findContoursOutput());
+        System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
+        ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.filterContoursOutput());
         System.out.println("Target Rects=" + targets.size());
         ArrayList<RotatedRect> nondumb = getRidOfDumbRectangles(targets);
         //ArrayList<RotatedRect> nondumb = targets;
@@ -54,7 +54,7 @@ public class VisionProcessor implements VisionPipeline{
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
             
         }
-        lastFrame = putFrameWithVisionTargets(sourceFrame, nondumb, rvec, tvec);            
+        lastFrame = putFrameWithVisionTargets(sourceFrame, targets, rvec, tvec);            
         
     }
     

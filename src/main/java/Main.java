@@ -237,8 +237,8 @@ public final class Main {
         try{
             VisionProcessor processor = (VisionProcessor)processed;            
             reporter.reportDistance(processor.getDistanceFromTarget());
-            //cvsource.putFrame(processor.getLastFrame());              
-            cvsource.putFrame(grip.hsvThresholdOutput());
+            cvsource.putFrame(processor.getLastFrame());              
+            //cvsource.putFrame(grip.hsvThresholdOutput());
         }
         catch ( Exception ex){
             ex.printStackTrace();
