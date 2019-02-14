@@ -1,5 +1,5 @@
 VideoSource.enumerateProperties()
-
+ public static final int kFixedFluorescent1 = 5100;
 cropping
 
 Mat image_original; 
