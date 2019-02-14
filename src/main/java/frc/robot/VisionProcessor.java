@@ -13,6 +13,7 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Size;
 import org.opencv.imgproc.*;
 
 /**
@@ -33,10 +34,22 @@ public class VisionProcessor implements VisionPipeline{
     
     @Override
     public void process(Mat sourceFrame) {
-        parent.process(sourceFrame);
         
+        
+        Mat resizedImage = sourceFrame;
+        Size sz = new Size(CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT);
+        Imgproc.resize( sourceFrame, resizedImage, sz );        
+        
+        parent.process(resizedImage);
+
+        System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
+        System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
         ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.filterContoursOutput());
+        System.out.println("Target Rects=" + targets.size());
         ArrayList<RotatedRect> nondumb = getRidOfDumbRectangles(targets);
+        //ArrayList<RotatedRect> nondumb = targets;
+        System.out.println("NonDumb Rects= " + nondumb.size());
+
         //SolvePnp Implementation
         Mat rvec = CameraConstants.getRvec();
         Mat tvec = CameraConstants.getTvec();
@@ -48,7 +61,7 @@ public class VisionProcessor implements VisionPipeline{
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
             
         }
-        lastFrame = putFrameWithVisionTargets(sourceFrame, nondumb, rvec, tvec);            
+        lastFrame = putFrameWithVisionTargets(resizedImage, targets, rvec, tvec);            
         
     }
     
@@ -61,7 +74,21 @@ public class VisionProcessor implements VisionPipeline{
         return distanceFromTarget;
     }
     
-    public  ArrayList<RotatedRect> getRidOfDumbRectangles(ArrayList<RotatedRect> input){
+
+    public  static ArrayList<RotatedRect> getRidOfDumbRectangles(ArrayList<RotatedRect> input){
+        var filtered = new ArrayList<RotatedRect>();
+
+
+        for ( RotatedRect rect: input){
+            if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
+                filtered.add(rect);
+            }
+
+        }        
+        return filtered;
+    }
+    public  static ArrayList<RotatedRect> getRidOfDumbandAloneRectangles(ArrayList<RotatedRect> input){
+
         //this gets rid of rectangles in the top of the image, which are usually lights
         var filtered = new ArrayList<RotatedRect>();
         for ( RotatedRect rect: input){

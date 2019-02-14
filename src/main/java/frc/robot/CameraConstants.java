@@ -16,6 +16,8 @@ import org.opencv.core.*;
 
 public class CameraConstants {
 
+    public static int PROCESS_WIDTH=320;
+    public static int PROCESS_HEIGHT=240;
     public static MatOfPoint3f getObjectPoints() {
         MatOfPoint3f objectPoint = new MatOfPoint3f();
         var point = new Point3[8];
@@ -56,8 +58,8 @@ public class CameraConstants {
     public static Mat getCameraMatrix() {
         Mat cameraMat = new Mat(3,3,CvType.CV_32FC1);
 
-        cameraMat.put(0, 0,640.0, 0.0, 320.0, 
-                      0.0, 480.0, 240.0, 
+        cameraMat.put(0, 0,CameraConstants.PROCESS_WIDTH, 0.0, CameraConstants.PROCESS_WIDTH/2.0, 
+                      0.0, CameraConstants.PROCESS_HEIGHT, CameraConstants.PROCESS_HEIGHT/2.0, 
                     0.0, 0.0, 1.0 );
 
         //cameraMat.put(0, 0, 320.0);
