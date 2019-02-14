@@ -231,13 +231,14 @@ public final class Main {
 
     rawVideoServer.setSource(cvsource);   
     VisionReporter reporter = new VisionReporter();
-   
-    VisionRunner runner = new VisionRunner(source, new VisionProcessor( new DCGripPipeline()), processed -> {
+    DCGripPipeline grip = new DCGripPipeline();
+    VisionRunner runner = new VisionRunner(source, new VisionProcessor( grip), processed -> {
         
         try{
             VisionProcessor processor = (VisionProcessor)processed;            
             reporter.reportDistance(processor.getDistanceFromTarget());
-            cvsource.putFrame(processor.getLastFrame());              
+            //cvsource.putFrame(processor.getLastFrame());              
+            cvsource.putFrame(grip.hsvThresholdOutput());
         }
         catch ( Exception ex){
             ex.printStackTrace();
