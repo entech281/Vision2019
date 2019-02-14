@@ -13,6 +13,7 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Size;
 import org.opencv.imgproc.*;
 
 /**
@@ -33,7 +34,13 @@ public class VisionProcessor implements VisionPipeline{
     
     @Override
     public void process(Mat sourceFrame) {
-        parent.process(sourceFrame);
+        
+        
+        Mat resizedImage = sourceFrame;
+        Size sz = new Size(CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT);
+        Imgproc.resize( sourceFrame, resizedImage, sz );        
+        
+        parent.process(resizedImage);
 
         System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
         System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
@@ -54,7 +61,7 @@ public class VisionProcessor implements VisionPipeline{
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
             
         }
-        lastFrame = putFrameWithVisionTargets(sourceFrame, targets, rvec, tvec);            
+        lastFrame = putFrameWithVisionTargets(resizedImage, targets, rvec, tvec);            
         
     }
     

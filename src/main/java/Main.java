@@ -227,7 +227,7 @@ public final class Main {
     MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
 
     CvSource cvsource = new CvSource("processed",
-        VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
+        VideoMode.PixelFormat.kMJPEG, CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT, 30);
 
     rawVideoServer.setSource(cvsource);   
     VisionReporter reporter = new VisionReporter();

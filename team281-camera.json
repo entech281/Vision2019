@@ -2,8 +2,9 @@
     "cameras": [
         {
             "brightness": 70,
-            "fps": 30,
+            "fps": 60,
             "height": 480,
+            "width": 640,
             "name": "rPi Camera 0",
             "path": "/dev/video0",
             "pixel format": "mjpeg",
@@ -125,8 +126,8 @@
                     "name": "compression_quality",
                     "value": 30
                 }
-            ],
-            "width": 640
+            ]
+            
         }
     ],
     "ntmode": "client",
