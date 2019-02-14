@@ -1,0 +1,33 @@
+VideoSource.enumerateProperties()
+
+cropping
+
+Mat image_original; 
+Point p1,p2,p3,p4;
+Rect rectCrop = new Rect(p1.x, p1.y , (p4.x-p1.x+1), (p4.y-p1.y+1));
+Mat image_output= image_original.submat(rectCrop);
+
+from 2017:
+
+  camera.exposure_mode = 'off'
+   camera.awb_mode = 'off'   
+   camera.awb_gains=(settings.red_gain,settings.blue_gain)
+   camera.shutter_speed = settings.shutter_speed
+        self.awb_mode = 'off'
+        self.exposure = 'off'
+        self.shutter_speed = 2500
+        self.blue_gain = 1.5
+        self.red_gain = 2.5   
+   
+           self.lower_filter = [45,0,150]
+        self.upper_filter = [65,255,255]
+        
+    #capturing at a bigger resolution lets us have a wider field of view
+    #1640x922 is the widest field of view, but is much slower than 1280x720
+    CAPTURE_RESOLUTION = ( 1280,720)
+    CAMERA_RESOLUTION= (320,90)
+
+    CAMERA_FRAMERATE = 60
+    RECOGNIZED_TARGET_COLOR = ( 255, 0, 0 )
+    UNRECOGNIZED_CONTOUR_COLOR = ( 0, 0, 255) 
+    WEB_FRAME_RATE=5    
