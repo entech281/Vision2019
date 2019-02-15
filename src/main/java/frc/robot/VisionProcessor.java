@@ -25,8 +25,8 @@ import java.io.*;
  */
 public class VisionProcessor implements VisionPipeline{
   
-    public static int MIN_Y = 160;
-    public static int MAX_Y = 600;
+    public static int MIN_Y = 50;
+    public static int MAX_Y = 300;
     private DCGripPipeline parent;
     private double distanceFromTarget = 0.0;
     private double lateralDistance = 0.0;
@@ -48,9 +48,10 @@ public class VisionProcessor implements VisionPipeline{
 
         System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
         System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
-        ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.filterContoursOutput());
+        //ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.filterContoursOutput());
+        ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.findContoursOutput());
         System.out.println("Target Rects=" + targets.size());
-        ArrayList<RotatedRect> nondumb = getRidOfDumbRectangles(targets);
+        ArrayList<RotatedRect> nondumb = getRidOfDumbandAloneRectangles(targets);
         //ArrayList<RotatedRect> nondumb = targets;
         System.out.println("NonDumb Rects= " + nondumb.size());
 
@@ -65,7 +66,7 @@ public class VisionProcessor implements VisionPipeline{
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
             
         }
-        lastFrame = putFrameWithVisionTargets(resizedImage, targets, rvec, tvec);            
+        lastFrame = putFrameWithVisionTargets(resizedImage, nondumb, rvec, tvec);            
         
     }
     
@@ -98,17 +99,24 @@ public class VisionProcessor implements VisionPipeline{
         //this gets rid of rectangles in the top of the image, which are usually lights
 
         var filtered = new ArrayList<RotatedRect>();
+        var filteredFromRandom = new ArrayList<RotatedRect>();
         var filteredFromSmall = new ArrayList<RotatedRect>();
+
         var filteredFinal = new ArrayList<RotatedRect>();
 
         for ( RotatedRect rect: input){
             if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
-                filteredFromSmall.add(rect);
+                filteredFromRandom.add(rect);
             }
 
         }
 
-        
+        for(RotatedRect rect: filteredFromRandom){
+            if(rect.angle!=0 && rect.size.height>5){
+                filteredFromSmall.add(rect);
+            }
+        }
+
         Collections.sort(filteredFromSmall, new RotatedRectangleSortLeftToRight());
         int i = 0;
         int len = filteredFromSmall.size();
@@ -118,7 +126,9 @@ public class VisionProcessor implements VisionPipeline{
 		while (i<(len-1)){
             RotatedRect rect1 = filteredFromSmall.get(i);
             RotatedRect rect2 = filteredFromSmall.get(i+1);
-            if (rect1.angle>0 && rect2.angle<0){
+            System.out.println("RECT1: "+rect1.angle);
+            System.out.println("RECT2: "+rect2.angle);
+            if (rect1.angle<-75 && rect1.angle>-100 && rect2.angle>-50 && rect2.angle<0){
                 filtered.add(rect1);
                 filtered.add(rect2);
                 i = i + 2;
@@ -131,35 +141,36 @@ public class VisionProcessor implements VisionPipeline{
         System.out.println("filtered"+ filtered.size());
 
         int n = 1;
-        int len_filtered = filtered.size();
-        int index_max = 0;
-        if (len_filtered>1){
-        while (n<(len_filtered-1)){
+        int lenFiltered = filtered.size();
+        int indexMax = 0;
+        if (lenFiltered>1){
+        while (n<(lenFiltered-1)){
             RotatedRect rect1 = filtered.get(n);
-            RotatedRect max_rect = filtered.get(index_max);
-            double distance_to_center1 = Math.abs(320 - rect1.center.x);
-            double distance_to_center_max = Math.abs(320 - max_rect.center.x);
-            if (distance_to_center1<distance_to_center_max){
-                index_max = n;
+            RotatedRect minRect = filtered.get(indexMax);
+            double distanceToCenter1 = Math.abs(320 - rect1.center.x);
+            double distanceToCenterMin = Math.abs(320 - minRect.center.x);
+            if (distanceToCenter1<distanceToCenterMin){
+                indexMax = n;
             }
             n = n+1;
         }
 
-        System.out.println("filtered_final"+filteredFinal.size());
 
-        if (index_max==0){
-            filteredFinal.add(filtered.get(index_max));
-            filteredFinal.add(filtered.get(index_max+1)); 
+
+        if (indexMax==0){
+            filteredFinal.add(filtered.get(indexMax));
+            filteredFinal.add(filtered.get(indexMax+1)); 
         }
-        else if (index_max%2 == 0){
-            filteredFinal.add(filtered.get(index_max));
-            filteredFinal.add(filtered.get(index_max+1));
+        else if (indexMax%2 == 0){
+            filteredFinal.add(filtered.get(indexMax));
+            filteredFinal.add(filtered.get(indexMax+1));
         }
         else{
-            filteredFinal.add(filtered.get(index_max-1));
-            filteredFinal.add(filtered.get(index_max)); 
+            filteredFinal.add(filtered.get(indexMax-1));
+            filteredFinal.add(filtered.get(indexMax)); 
         }
     }
+    System.out.println("filtered_final"+filteredFinal.size());
         return filteredFinal;
 
     }
