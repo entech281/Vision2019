@@ -29,6 +29,7 @@ public class VisionProcessor implements VisionPipeline{
     public static int MAX_Y = 600;
     private DCGripPipeline parent;
     private double distanceFromTarget = 0.0;
+    private double lateralDistance = 0.0;
     private Mat lastFrame = null;
     
     public VisionProcessor(DCGripPipeline parent ){
@@ -76,7 +77,9 @@ public class VisionProcessor implements VisionPipeline{
     public double getDistanceFromTarget() {
         return distanceFromTarget;
     }
-    
+    public double getLateralDistance() {
+        return lateralDistance;
+    }
 
     public  static ArrayList<RotatedRect> getRidOfDumbRectangles(ArrayList<RotatedRect> input){
         var filtered = new ArrayList<RotatedRect>();
@@ -193,8 +196,10 @@ public class VisionProcessor implements VisionPipeline{
                     String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
                     Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
             }
-            double [] distance_from_target = tvec.get(2, 0);
-            distanceFromTarget = distance_from_target[0];
+            double [] distanceTarget = tvec.get(2, 0);
+            double [] lateralDist = tvec.get(0, 0);
+            distanceFromTarget = distanceTarget[0];
+            lateralDistance = lateralDist[0];
 
             Imgproc.putText(img, df.format(distanceFromTarget), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
 
