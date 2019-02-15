@@ -54,6 +54,7 @@ task deploy {
         execute 'sudo /bin/mount -o remount,rw / && sudo /bin/mount -o remount,rw /boot'
         put from: "${project.buildDir}/libs/Vision2019-all.jar", into: '/home/pi/'
         put from: "${project.projectDir}/runCamera", into: '/home/pi'
+        put from: "${project.projectDir}/team281-camera.json", into: '/home/pi'
         execute 'sudo /bin/mount -o remount,ro / && sudo /bin/mount -o remount,ro /boot'
         execute 'sudo svc -t /service/camera'
       }

@@ -227,17 +227,18 @@ public final class Main {
     MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
 
     CvSource cvsource = new CvSource("processed",
-        VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
+        VideoMode.PixelFormat.kMJPEG, CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT, 30);
 
     rawVideoServer.setSource(cvsource);   
     VisionReporter reporter = new VisionReporter();
-   
-    VisionRunner runner = new VisionRunner(source, new VisionProcessor( new DCGripPipeline()), processed -> {
+    DCGripPipeline grip = new DCGripPipeline();
+    VisionRunner runner = new VisionRunner(source, new VisionProcessor( grip), processed -> {
         
         try{
             VisionProcessor processor = (VisionProcessor)processed;            
             reporter.reportDistance(processor.getDistanceFromTarget());
             cvsource.putFrame(processor.getLastFrame());              
+            //cvsource.putFrame(grip.hsvThresholdOutput());
         }
         catch ( Exception ex){
             ex.printStackTrace();
