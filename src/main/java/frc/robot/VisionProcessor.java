@@ -33,6 +33,7 @@ public class VisionProcessor implements VisionPipeline{
     private double distanceFromTarget = 0.0;
     private double lateralDistance = 0.0;
     private Mat lastFrame = null;
+    public double frameCount = 0.0;
     
     public VisionProcessor(DCGripPipeline parent ){
         this.parent = parent;
@@ -40,17 +41,22 @@ public class VisionProcessor implements VisionPipeline{
     
     @Override
     public void process(Mat sourceFrame) {
-        
+        frameCount = frameCount + 1;
+
     
         //The values of the output image
         int startRow = (CameraConstants.PROCESS_HEIGHT)/3;
-        int endRow = (2*CameraConstants.PROCESS_HEIGHT)/3;
+        int endRow = (5*CameraConstants.PROCESS_HEIGHT)/6;
+
+        Point topLeft = new Point(0, startRow);
+        Point bottomRight = new Point(CameraConstants.PROCESS_WIDTH, endRow);
         
-        //Rect rectCrop = new Rect(p1.x, p1.y , (p4.x-p1.x+1), (p4.y-p1.y+1));
-        Mat resizedImage = sourceFrame.submat(startRow, endRow, 0, CameraConstants.PROCESS_WIDTH);
-        System.out.println("Resized:" + resizedImage.dump());
+        Rect rectCrop = new Rect(topLeft, bottomRight);
+        //Mat resized = sourceFrame.submat(startRow, endRow, 0, CameraConstants.PROCESS_WIDTH);
+        System.out.println("Resized:");
+
         
-        //Mat resizedImage = sourceFrame;        
+        Mat resizedImage = sourceFrame.submat(rectCrop);        
         
         parent.process(resizedImage);
 
@@ -83,6 +89,10 @@ public class VisionProcessor implements VisionPipeline{
         return lastFrame;
     }
     
+    public double getFrameCount() {
+        return frameCount;
+    }
+
     public double getDistanceFromTarget() {
         return distanceFromTarget;
     }
@@ -92,10 +102,14 @@ public class VisionProcessor implements VisionPipeline{
 
     public  static ArrayList<RotatedRect> getRidOfDumbRectangles(ArrayList<RotatedRect> input){
         var filtered = new ArrayList<RotatedRect>();
-
+        double MIN_HEIGHT = 10;
+        double MIN_WIDTH = 5;
 
         for ( RotatedRect rect: input){
-            if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
+            //if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
+                //filtered.add(rect);
+            //}
+            if(rect.size.height>MIN_HEIGHT && rect.size.width>MIN_WIDTH){
                 filtered.add(rect);
             }
 
@@ -111,9 +125,14 @@ public class VisionProcessor implements VisionPipeline{
         var filteredFromSmall = new ArrayList<RotatedRect>();
 
         var filteredFinal = new ArrayList<RotatedRect>();
+        double MIN_HEIGHT = 10;
+        double MIN_WIDTH = 5;
 
         for ( RotatedRect rect: input){
-            if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
+            /*if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
+                filteredFromRandom.add(rect);
+            }*/
+            if(rect.size.height>MIN_HEIGHT && rect.size.width>MIN_WIDTH){
                 filteredFromRandom.add(rect);
             }
 
@@ -155,8 +174,8 @@ public class VisionProcessor implements VisionPipeline{
         while (n<(lenFiltered-1)){
             RotatedRect rect1 = filtered.get(n);
             RotatedRect minRect = filtered.get(indexMax);
-            double distanceToCenter1 = Math.abs(320 - rect1.center.x);
-            double distanceToCenterMin = Math.abs(320 - minRect.center.x);
+            double distanceToCenter1 = Math.abs(CameraConstants.PROCESS_WIDTH/2 - rect1.center.x);
+            double distanceToCenterMin = Math.abs(CameraConstants.PROCESS_WIDTH/2 - minRect.center.x);
             if (distanceToCenter1<distanceToCenterMin){
                 indexMax = n;
             }
