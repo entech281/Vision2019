@@ -10,6 +10,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.calib3d.Calib3d;
@@ -24,7 +25,8 @@ import java.io.*;
  * @author dcowden
  */
 public class VisionProcessor implements VisionPipeline{
-  
+
+
     public static int MIN_Y = 50;
     public static int MAX_Y = 300;
     private DCGripPipeline parent;
@@ -39,10 +41,16 @@ public class VisionProcessor implements VisionPipeline{
     @Override
     public void process(Mat sourceFrame) {
         
+    
+        //The values of the output image
+        int startRow = (CameraConstants.PROCESS_HEIGHT)/3;
+        int endRow = (2*CameraConstants.PROCESS_HEIGHT)/3;
         
-        Mat resizedImage = sourceFrame;
-        Size sz = new Size(CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT);
-        Imgproc.resize( sourceFrame, resizedImage, sz );        
+        //Rect rectCrop = new Rect(p1.x, p1.y , (p4.x-p1.x+1), (p4.y-p1.y+1));
+        Mat resizedImage = sourceFrame.submat(startRow, endRow, 0, CameraConstants.PROCESS_WIDTH);
+        System.out.println("Resized:" + resizedImage.dump());
+        
+        //Mat resizedImage = sourceFrame;        
         
         parent.process(resizedImage);
 
