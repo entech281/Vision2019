@@ -52,8 +52,6 @@ public class VisionProcessor implements VisionPipeline{
         Point bottomRight = new Point(CameraConstants.PROCESS_WIDTH, endRow);
         
         Rect rectCrop = new Rect(topLeft, bottomRight);
-        //Mat resized = sourceFrame.submat(startRow, endRow, 0, CameraConstants.PROCESS_WIDTH);
-        System.out.println("Resized:");
 
         
         Mat resizedImage = sourceFrame.submat(rectCrop);        
@@ -62,11 +60,9 @@ public class VisionProcessor implements VisionPipeline{
 
         System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
         System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
-        //ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.findContoursOutput());
         System.out.println("Target Rects=" + targets.size());
         ArrayList<RotatedRect> nondumb = getRidOfDumbandAloneRectangles(targets);
-        //ArrayList<RotatedRect> nondumb = targets;
         System.out.println("NonDumb Rects= " + nondumb.size());
 
         //SolvePnp Implementation
