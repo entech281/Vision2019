@@ -14,10 +14,14 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  */
 public class VisionReporter {
 	private NetworkTableInstance ntist = NetworkTableInstance.getDefault();
-	private NetworkTableEntry vision = ntist.getEntry("team281.Vision"); 
+    private NetworkTableEntry distance = ntist.getEntry("team281.Vision.distance");
+    private NetworkTableEntry lateral = ntist.getEntry("team281.Vision.lateral"); 
+    private NetworkTableEntry frameCount = ntist.getEntry("team281.frameCount");
         
         
-        public void reportDistance(double distanceToTarget){
-            vision.forceSetDouble(distanceToTarget);
+        public void reportDistance(double distanceToTarget, double lateralDistance, double count){
+            distance.forceSetDouble(distanceToTarget);
+            lateral.forceSetDouble(lateralDistance);
+            frameCount.forceSetDouble(count);
         }
 }
