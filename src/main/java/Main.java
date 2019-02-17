@@ -18,6 +18,7 @@ import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 import frc.robot.CameraConstants;
 import frc.robot.ImageResizer;
@@ -34,18 +35,20 @@ public final class Main {
 
     private static final int TEAM = 281;
     private static int frameNumber = 0;
+
     private interface TIMERS {
+
         String FRAME = "frame";
         String RESIZE = "resize";
-        String REPORT= "report";
+        String REPORT = "report";
 
-    }    
-    
+    }
+
     static String readFile(String path, Charset encoding) throws IOException {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return new String(encoded, encoding);
     }
-    
+
     public static void main(String... args) throws IOException {
 
         if (args.length > 0) {
@@ -55,66 +58,68 @@ public final class Main {
         String configFileText = readFile(configFileName, StandardCharsets.UTF_8);
 
         // start NetworkTables
-        //NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
-        //ntinst.startClientTeam(TEAM);
-        TimeTracker timeTracker = new TimeTracker();
+        NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
+        ntinst.startClientTeam(TEAM);
         
+        TimeTracker timer = new TimeTracker();
+
         MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
         CvSource cvsource = new CvSource("processed",
-                VideoMode.PixelFormat.kMJPEG, 
-                CameraConstants.PROCESS_WIDTH, 
+                VideoMode.PixelFormat.kMJPEG,
+                CameraConstants.PROCESS_WIDTH,
                 CameraConstants.PROCESS_HEIGHT, 30);
 
         //rawVideoServer.setSource(cvsource);
-        UsbCamera source = new UsbCamera("PiCamera", "/dev/video0");        
+        UsbCamera source = new UsbCamera("PiCamera", "/dev/video0");
         boolean success = source.setConfigJson(configFileText);
         System.out.println("Camera Configured: " + success);
+        
         VideoMode videoMode = new VideoMode(VideoMode.PixelFormat.kBGR, CameraConstants.PROCESS_WIDTH, CameraConstants.PROCESS_HEIGHT, 90);
         source.setVideoMode(videoMode);
         rawVideoServer.setSource(cvsource);
 
         VisionReporter reporter = new VisionReporter();
-        
         PeriodicReporter consoleReporter = new PeriodicReporter(5000);
         VisionProcessor processor = new VisionProcessor(new GripPipeline());
+        
         CvSink sink = new CvSink("From Camera");
         sink.setSource(source);
         sink.setEnabled(true);
+        
         Mat inputFrame = new Mat();
         ImageResizer cameraResizer = new ImageResizer();
         while (true) {
-            timeTracker.startTimer(TIMERS.FRAME);
-            try{
-                
+            timer.start(TIMERS.FRAME);
+            try {
+
                 sink.grabFrame(inputFrame);
 
                 //do not process empty images
-                if ( inputFrame.size().height <= 0 || inputFrame.size().width <= 0 ){
+                if (inputFrame.size().height <= 0 || inputFrame.size().width <= 0) {
                     continue;
                 }
 
-                timeTracker.startTimer(TIMERS.RESIZE);
+                timer.start(TIMERS.RESIZE);
                 Mat resized = cameraResizer.resizeImage(inputFrame,
                         new Size(
-                                CameraConstants.PROCESS_WIDTH, 
+                                CameraConstants.PROCESS_WIDTH,
                                 CameraConstants.PROCESS_HEIGHT)
                 );
-                timeTracker.endTimer(TIMERS.RESIZE);
-                
-                timeTracker.startTimer(TIMERS.REPORT);
-                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameNumber);                
-                timeTracker.endTimer(TIMERS.REPORT);
+                timer.end(TIMERS.RESIZE);
+
+                timer.start(TIMERS.REPORT);
+                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameNumber);
+                timer.end(TIMERS.REPORT);
                 processor.process(inputFrame);
                 cvsource.putFrame(processor.getLastFrame());
 
-                consoleReporter.reportIfNeeded(timeTracker);
-             
-            }
-            catch ( Exception ex){
+                consoleReporter.reportIfNeeded(timer);
+
+            } catch (Exception ex) {
                 System.out.println("Err: " + ex.getMessage());
             }
             frameNumber++;
-            timeTracker.endTimer(TIMERS.FRAME);
+            timer.end(TIMERS.FRAME);
         }
     }
 

@@ -17,7 +17,6 @@ import org.opencv.core.Scalar;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.imgproc.*;
 import java.util.*;
-import java.lang.*;
 
 /**
  * This has a lot of the code that used to be inside of GripPipeline
@@ -28,23 +27,24 @@ public class VisionProcessor implements VisionPipeline {
 
     public static int MIN_Y = 50;
     public static int MAX_Y = 300;
-    public static int CONSOLE_REPORTING_INTERVAL_MILLIS=1000;
+    public static int CONSOLE_REPORTING_INTERVAL_MILLIS = 1000;
     private GripPipeline parent;
     private double distanceFromTarget = 0.0;
     private double lateralDistance = 0.0;
     private Mat lastFrame = null;
-    
-    private PeriodicReporter periodicReporter = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
-    private TimeTracker timeTracker = new TimeTracker();
-    
+
+    private final PeriodicReporter periodicReporter = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
+    private final TimeTracker timer = new TimeTracker();
+
     private interface TIMERS {
+
         String GRIP = "grip";
         String RESIZE = "resize";
-        String PROCESS= "process";
+        String PROCESS = "process";
         String PNP = "pnp";
         String OUTPUT = "output";
     }
-    
+
     public VisionProcessor(GripPipeline parent) {
         this.parent = parent;
     }
@@ -52,8 +52,8 @@ public class VisionProcessor implements VisionPipeline {
     @Override
     public void process(Mat sourceFrame) {
 
-        timeTracker.startTimer(TIMERS.PROCESS);
-        
+        timer.start(TIMERS.PROCESS);
+
         int startRow = (CameraConstants.PROCESS_HEIGHT) / 4;
         int endRow = (11 * CameraConstants.PROCESS_HEIGHT) / 12;
         boolean debug = true;
@@ -64,14 +64,13 @@ public class VisionProcessor implements VisionPipeline {
         Rect rectCrop = new Rect(topLeft, bottomRight);
 
         //Mat resizedImage = sourceFrame.submat(rectCrop);
-        timeTracker.startTimer(TIMERS.RESIZE);
-        Mat resizedImage = new Mat(sourceFrame,rectCrop);
-        timeTracker.endTimer(TIMERS.RESIZE);
-        
-        timeTracker.startTimer(TIMERS.GRIP);
+        timer.start(TIMERS.RESIZE);
+        Mat resizedImage = new Mat(sourceFrame, rectCrop);
+        timer.end(TIMERS.RESIZE);
+
+        timer.start(TIMERS.GRIP);
         parent.process(resizedImage);
-        timeTracker.endTimer(TIMERS.GRIP);
-        
+        timer.end(TIMERS.GRIP);
 
         ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> nondumb = getRidOfDumbandAloneRectangles(targets);
@@ -81,34 +80,32 @@ public class VisionProcessor implements VisionPipeline {
         Mat tvec = CameraConstants.getTvec();
 
         if (nondumb.size() == 2) {
-            timeTracker.startTimer(TIMERS.PNP);
+            timer.start(TIMERS.PNP);
             Calib3d.solvePnP(CameraConstants.getObjectPoints(),
                     CameraConstants.getImgPoint(nondumb),
                     CameraConstants.getCameraMatrix(),
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
-            timeTracker.endTimer(TIMERS.PNP);
+            timer.end(TIMERS.PNP);
         }
-        
-           
-        
-        timeTracker.startTimer(TIMERS.OUTPUT);
+
+        timer.start(TIMERS.OUTPUT);
         if (debug) {
             lastFrame = putFrameWithVisionTargetsIfSwitchIsOn(resizedImage, nondumb, initial, rvec, tvec);
         } else {
             lastFrame = putFrameWithVisionTargets(resizedImage, nondumb, rvec, tvec);
-        }                
-        timeTracker.endTimer(TIMERS.OUTPUT);        
-        
+        }
+        timer.end(TIMERS.OUTPUT);
+
         periodicReporter.reportIfNeeded(
-                String.format("Dist:%.3f, Lateral:%.3f, Contours:%d, Filtered:%d,Targets:%d, FilteredTargets:%d ", 
+                String.format("Dist:%.3f, Lateral:%.3f, Contours:%d, Filtered:%d,Targets:%d, FilteredTargets:%d ",
                         distanceFromTarget,
                         lateralDistance,
                         parent.findContoursOutput().size(),
                         parent.filterContoursOutput().size(),
                         targets.size(),
-                         nondumb.size()
-                 ));         
-        timeTracker.endTimer(TIMERS.PROCESS);
+                        nondumb.size()
+                ));
+        timer.end(TIMERS.PROCESS);
     }
 
     public Mat getLastFrame() {

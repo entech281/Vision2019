@@ -21,11 +21,11 @@ public class TimeTracker {
         getOrCreateSample(name).add(value);
     }
     
-    public void startTimer(String name){
+    public void start(String name){
         getOrCreateStopWatch(name);
     }
     
-    public void endTimer(String name){
+    public void end(String name){
         long elapsed = getOrCreateStopWatch(name).elapsedMs();
         recordTiming(name,elapsed);
         timers.remove(name);
