@@ -20,22 +20,19 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
     @Override
     public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter) {
        //this gets rid of rectangles in the top of the image, which are usually lights
-        var filtered = new ArrayList<RotatedRect>();
-        var filteredFromSmall = new ArrayList<RotatedRect>();
-        var filteredFinal = new ArrayList<RotatedRect>();
 
-        filteredFromSmall = new GibberishRectangleFilter().filter(toFilter);
-
-        Collections.sort(filteredFromSmall, new RotatedRectangleComparator());
+        
+        Collections.sort(toFilter, new RotatedRectangleComparator());
         int i = 0;
-        int len = filteredFromSmall.size();
+        int len = toFilter.size();
 
-        //System.out.println("filtered_from_small"+ len);
+        var filtered = new ArrayList<RotatedRect>();
+        var filteredFinal = new ArrayList<RotatedRect>();
         while (i < (len - 1)) {
-            RotatedRect rect1 = filteredFromSmall.get(i);
-            RotatedRect rect2 = filteredFromSmall.get(i + 1);
-            System.out.println("RECT1: " + rect1.angle);
-            System.out.println("RECT2: " + rect2.angle);
+            RotatedRect rect1 = toFilter.get(i);
+            RotatedRect rect2 = toFilter.get(i + 1);
+            //System.out.println("RECT1: " + rect1.angle);
+            //System.out.println("RECT2: " + rect2.angle);
             if (rect1.angle < -75 && rect1.angle > -100 && rect2.angle > -50 && rect2.angle < 0) {
                 filtered.add(rect1);
                 filtered.add(rect2);

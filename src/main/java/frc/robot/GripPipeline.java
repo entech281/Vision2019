@@ -68,6 +68,7 @@ public class GripPipeline implements VisionPipeline {
         timer.end(TIMERS.FIND);
         
         // Step Filter_Contours0:
+       
         ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
         double filterContoursMinArea = 19.0;
         double filterContoursMinPerimeter = 0.0;

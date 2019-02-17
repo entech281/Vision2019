@@ -27,8 +27,9 @@ import java.util.*;
  */
 public class VisionProcessor implements VisionPipeline {
 
-    public static int MIN_Y = 50;
-    public static int MAX_Y = 300;
+    public static double LATERAL_DISTANCE_FACTOR=1.0;
+    public static double PERPENDICULAR_DISTANCE_FACTOR=0.6178;
+    
     public static int CONSOLE_REPORTING_INTERVAL_MILLIS = 1000;
     private GripPipeline parent;
     private double distanceFromTarget = 0.0;
@@ -50,70 +51,82 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public interface COLORS{
-        Scalar RED = new Scalar(255,0,0);
-        Scalar BLUE = new Scalar(0,255,0);
-        Scalar GREEN = new Scalar(0,0,255);
+        Scalar BLUE = new Scalar(255,0,0);
+        Scalar GREEN = new Scalar(0,255,0);
+        Scalar RED = new Scalar(0,0,255);
 }
     public VisionProcessor(GripPipeline parent, TimeTracker timer) {
         this.parent = parent;
         this.timer = timer;
     }
 
-    @Override
-    public void process(Mat sourceFrame) {
-
-        timer.start(TIMERS.PROCESS);
-
-        int startRow = (CameraConstants.PROCESS_HEIGHT) / 4;
-        int endRow = (11 * CameraConstants.PROCESS_HEIGHT) / 12;
+    private Mat cropImage(Mat input ){
+        int startRow = CameraConstants.RECOGNIZE_TOP;
+        int endRow = CameraConstants.RECOGNIZE_BOTTOM;
         
 
         Point topLeft = new Point(0, startRow);
         Point bottomRight = new Point(CameraConstants.PROCESS_WIDTH, endRow);
-
         Rect rectCrop = new Rect(topLeft, bottomRight);
 
-        //Mat resizedImage = sourceFrame.submat(rectCrop);
-        timer.start(TIMERS.RESIZE);
-        Mat resizedImage = new Mat(sourceFrame, rectCrop);
-        timer.end(TIMERS.RESIZE);
+        
+        return new Mat(input, rectCrop);        
+    }
+    
+    public void computeAndSetDistances(Mat rvec, Mat tvec){
+        double[] distanceTarget = tvec.get(2, 0);
+        double[] lateralDist = tvec.get(0, 0);
+        distanceFromTarget = distanceTarget[0] * PERPENDICULAR_DISTANCE_FACTOR;
+        lateralDistance = lateralDist[0] * LATERAL_DISTANCE_FACTOR;        
+    }
+    
+    @Override
+    public void process(Mat sourceFrame) {
 
+        timer.start(TIMERS.PROCESS);
+        timer.start(TIMERS.RESIZE);
+        Mat resizedImage = cropImage(sourceFrame);
+        timer.end(TIMERS.RESIZE);
+        
         timer.start(TIMERS.GRIP);
         parent.process(resizedImage);
         timer.end(TIMERS.GRIP);
 
-        ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.findContoursOutput());
-        ArrayList<RotatedRect> nondumb = new DumbAndAloneRectangleFilter().filter(targets);
-        ArrayList<RotatedRect> initial = new GibberishRectangleFilter().filter(targets);
-
+        ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());        
+        ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
+        ArrayList<RotatedRect> selected = new DumbAndAloneRectangleFilter().filter(ok);
+        
         Mat rvec = CameraConstants.getRvec();
         Mat tvec = CameraConstants.getTvec();
 
-        if (nondumb.size() == 2) {
+        if (selected.size() == 2) {
             timer.start(TIMERS.PNP);
             Calib3d.solvePnP(CameraConstants.getObjectPoints(),
-                    CameraConstants.getImgPoint(nondumb),
+                    CameraConstants.getImgPoint(selected),
                     CameraConstants.getCameraMatrix(),
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
             timer.end(TIMERS.PNP);
         }
 
         timer.start(TIMERS.OUTPUT);
-        drawRectanglesOnImage(resizedImage,targets,COLORS.BLUE);
-        drawRectanglesOnImage(resizedImage,initial,COLORS.RED);
-        drawRectanglesOnImage(resizedImage,nondumb,COLORS.GREEN);
-        putSelectedTargetsOnFrame(resizedImage, nondumb, rvec, tvec);
+        drawRectanglesOnImage(resizedImage,initial,COLORS.BLUE);
+        drawRectanglesOnImage(resizedImage,ok,COLORS.RED);
+        drawRectanglesOnImage(resizedImage,selected,COLORS.GREEN);
+        computeAndSetDistances(rvec,tvec);
+        putOutputTextOnFrame(resizedImage);
+        //putSelectedTargetsOnFrame(resizedImage, selected, rvec, tvec);
 
         timer.end(TIMERS.OUTPUT);
         timer.start(TIMERS.REPORT);
         periodicReporter.reportIfNeeded(
-                String.format("Dist:%.3f, Lateral:%.3f, Contours:%d, Filtered:%d,Targets:%d, FilteredTargets:%d ",
+                String.format("Dist:%.3f, Lateral:%.3f, Contours:%d. Targets:\nInitial:%d\nok:%d\nselected:%d ",
                         distanceFromTarget,
                         lateralDistance,
                         parent.findContoursOutput().size(),
-                        parent.filterContoursOutput().size(),
-                        targets.size(),
-                        nondumb.size()
+                        initial.size(),
+                        ok.size(),                        
+                        selected.size()
+
                 ));
         timer.end(TIMERS.REPORT);
         timer.end(TIMERS.PROCESS);
@@ -137,39 +150,23 @@ public class VisionProcessor implements VisionPipeline {
         for (RotatedRect r : rectangles) {
             r.points(points);
             for (int i = 0; i < 4; i++) {
-                Imgproc.line(img, points[i], points[(i + 1) % 4], new Scalar(0, 0, 255), 5);
+                Imgproc.line(img, points[i], points[(i + 1) % 4], color, 5);
             }
         }        
     }
 
+    public void putOutputTextOnFrame( Mat img){      
+        Imgproc.putText(img, String.format("D: %.2f",distanceFromTarget), new Point(30, 60), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255,255,255), 2);
+        Imgproc.putText(img, String.format("L: %.2f",lateralDistance), new Point(30, 80), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255,255,255), 2);
+    }
     public void putSelectedTargetsOnFrame( Mat img, List<RotatedRect> selected, Mat rvec, Mat tvec) {
         
         //TODO: i dont like this: it mixes computing the distances with the logic to display the text
-        Point points[] = new Point[4];
-        var centers = new ArrayList<Point>();
-
-        for (RotatedRect r : selected) {
-            centers.add(r.center);
-            r.points(points);
-        }
-        
-        DecimalFormat df = new DecimalFormat("#, ###.##");
-        if (centers.size() == 2) {
-            Imgproc.line(img, centers.get(0), centers.get(1), new Scalar(0, 255, 0), 6);
-            Point midpoint = new Point(100, 200);
-            String distance = df.format(Math.sqrt((centers.get(0).x - centers.get(1).x) * (centers.get(0).x - centers.get(1).x) + (centers.get(0).y - centers.get(1).y) * (centers.get(0).y - centers.get(1).y)));
-            Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-        }
-        double[] distanceTarget = tvec.get(2, 0);
-        double[] lateralDist = tvec.get(0, 0);
-        distanceFromTarget = distanceTarget[0];
-        lateralDistance = lateralDist[0];
-
-        Imgproc.putText(img, df.format(distanceFromTarget), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
-
+  
+       
     }
+    
     public ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours){
-        //System.out.println(inputContours.size() + " inputContours");
                 
         var visionTarget = new ArrayList<RotatedRect>();
 

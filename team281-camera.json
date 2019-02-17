@@ -2,7 +2,7 @@
         {
             "brightness": 70,
             "fps": 90,
-            "height": 360,
+            "height": 480,
             "width": 640,
             "name": "rPi Camera 0",
             "path": "/dev/video0",
