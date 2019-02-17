@@ -25,7 +25,7 @@ repositories {
 remotes {
   pi {
     role 'pi'
-    host = '192.168.0.16'
+    host = 'vision.team281.org'
     user = 'pi'
     password="raspberry"
   }

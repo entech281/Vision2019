@@ -35,20 +35,28 @@ public class VisionProcessor implements VisionPipeline {
     private double lateralDistance = 0.0;
     private Mat lastFrame = null;
 
-    private final PeriodicReporter periodicReporter = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
-    private final TimeTracker timer = new TimeTracker();
+    private final PeriodicReporter periodicReporter = 
+            new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
+    private final TimeTracker timer;
 
     private interface TIMERS {
 
-        String GRIP = "grip";
-        String RESIZE = "resize";
-        String PROCESS = "process";
-        String PNP = "pnp";
-        String OUTPUT = "output";
+        String GRIP = "p:grip";
+        String RESIZE = "p:resize";
+        String PROCESS = "p:process";
+        String PNP = "p:pnp";
+        String OUTPUT = "p:output";
+        String REPORT = "p:report";
     }
 
-    public VisionProcessor(GripPipeline parent) {
+    public interface COLORS{
+        Scalar RED = new Scalar(255,0,0);
+        Scalar BLUE = new Scalar(0,255,0);
+        Scalar GREEN = new Scalar(0,0,255);
+}
+    public VisionProcessor(GripPipeline parent, TimeTracker timer) {
         this.parent = parent;
+        this.timer = timer;
     }
 
     @Override
@@ -91,11 +99,13 @@ public class VisionProcessor implements VisionPipeline {
         }
 
         timer.start(TIMERS.OUTPUT);
-        boolean debug = false;
-        lastFrame = putFrameWithVisionTargets(debug,resizedImage, nondumb, initial, rvec, tvec);
+        drawRectanglesOnImage(resizedImage,targets,COLORS.BLUE);
+        drawRectanglesOnImage(resizedImage,initial,COLORS.RED);
+        drawRectanglesOnImage(resizedImage,nondumb,COLORS.GREEN);
+        putSelectedTargetsOnFrame(resizedImage, nondumb, rvec, tvec);
 
         timer.end(TIMERS.OUTPUT);
-
+        timer.start(TIMERS.REPORT);
         periodicReporter.reportIfNeeded(
                 String.format("Dist:%.3f, Lateral:%.3f, Contours:%d, Filtered:%d,Targets:%d, FilteredTargets:%d ",
                         distanceFromTarget,
@@ -105,7 +115,9 @@ public class VisionProcessor implements VisionPipeline {
                         targets.size(),
                         nondumb.size()
                 ));
+        timer.end(TIMERS.REPORT);
         timer.end(TIMERS.PROCESS);
+        lastFrame = resizedImage;
     }
 
     public Mat getLastFrame() {
@@ -120,27 +132,26 @@ public class VisionProcessor implements VisionPipeline {
         return lateralDistance;
     }
 
-    public Mat putFrameWithVisionTargets(boolean showAll, Mat img, List<RotatedRect> selected, List<RotatedRect> initial, Mat rvec, Mat tvec) {
+    public void drawRectanglesOnImage( Mat img, List<RotatedRect> rectangles, Scalar color){
+        Point points[] = new Point[4];
+        for (RotatedRect r : rectangles) {
+            r.points(points);
+            for (int i = 0; i < 4; i++) {
+                Imgproc.line(img, points[i], points[(i + 1) % 4], new Scalar(0, 0, 255), 5);
+            }
+        }        
+    }
+
+    public void putSelectedTargetsOnFrame( Mat img, List<RotatedRect> selected, Mat rvec, Mat tvec) {
+        
+        //TODO: i dont like this: it mixes computing the distances with the logic to display the text
         Point points[] = new Point[4];
         var centers = new ArrayList<Point>();
 
         for (RotatedRect r : selected) {
             centers.add(r.center);
             r.points(points);
-            for (int i = 0; i < 4; i++) {
-                Imgproc.line(img, points[i], points[(i + 1) % 4], new Scalar(0, 0, 255), 5);
-            }
         }
-        if ( showAll ){
-            for (RotatedRect r : initial) {
-                centers.add(r.center);
-                r.points(points);
-                for (int i = 0; i < 4; i++) {
-                    Imgproc.line(img, points[i], points[(i + 1) % 4], new Scalar(255, 0, 0), 5);
-                }
-            }              
-        }
-      
         
         DecimalFormat df = new DecimalFormat("#, ###.##");
         if (centers.size() == 2) {
@@ -156,7 +167,6 @@ public class VisionProcessor implements VisionPipeline {
 
         Imgproc.putText(img, df.format(distanceFromTarget), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
 
-        return img;
     }
     public ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours){
         //System.out.println(inputContours.size() + " inputContours");

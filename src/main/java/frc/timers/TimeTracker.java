@@ -2,6 +2,7 @@ package frc.timers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Keeps a running average of times from various operations
@@ -10,7 +11,7 @@ import java.util.Map;
 public class TimeTracker {
     
     public static int PERIOD=20;
-    private Map<String,SampleStatistics> samples = new HashMap<String,SampleStatistics>();
+    private Map<String,SampleStatistics> samples = new TreeMap<String,SampleStatistics>();
     private Map<String,StopWatch> timers = new HashMap<String,StopWatch>();
     
     public TimeTracker(){
@@ -58,6 +59,17 @@ public class TimeTracker {
     
     @Override
     public String toString(){
-        return String.format("Timings [ms]: " + samples);
+        StringBuffer sb = new StringBuffer();
+        sb.append("Timings [ms]:\n");
+        sb.append("------------------\n");
+        sb.append("Key\t\tAvg\t\tLast\n");
+        for ( Map.Entry<String,SampleStatistics>s: samples.entrySet()){
+            SampleStatistics ss = s.getValue();
+            sb.append(
+                    String.format("%s\t\t%d\t\t%d\n",s.getKey(), ss.getAverage(), ss.getLatest() )
+                    );
+            
+        }
+        return sb.toString();
     }
 }

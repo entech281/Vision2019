@@ -25,6 +25,7 @@ import frc.robot.ImageResizer;
 import frc.robot.GripPipeline;
 import frc.robot.VisionProcessor;
 import frc.robot.VisionReporter;
+import frc.timers.FramerateTracker;
 import frc.timers.PeriodicReporter;
 import frc.timers.TimeTracker;
 import org.opencv.core.Size;
@@ -38,10 +39,12 @@ public final class Main {
 
     private interface TIMERS {
 
-        String FRAME = "frame";
-        String RESIZE = "resize";
-        String REPORT = "report";
-
+        String FRAME = "m:all";
+        String RESIZE = "m:resize";
+        String REPORT = "m:report";
+        String GRAB = "m:grab";
+        String PROCESS= "m:process";
+        String PUT ="m:put";
     }
 
     static String readFile(String path, Charset encoding) throws IOException {
@@ -71,6 +74,7 @@ public final class Main {
 
         //rawVideoServer.setSource(cvsource);
         UsbCamera source = new UsbCamera("PiCamera", "/dev/video0");
+
         boolean success = source.setConfigJson(configFileText);
         System.out.println("Camera Configured: " + success);
         
@@ -79,8 +83,9 @@ public final class Main {
         rawVideoServer.setSource(cvsource);
 
         VisionReporter reporter = new VisionReporter();
-        PeriodicReporter consoleReporter = new PeriodicReporter(5000);
-        VisionProcessor processor = new VisionProcessor(new GripPipeline());
+        PeriodicReporter consoleReporter = new PeriodicReporter(2000);
+        FramerateTracker frameRate = new FramerateTracker();
+        VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer);
         
         CvSink sink = new CvSink("From Camera");
         sink.setSource(source);
@@ -91,9 +96,10 @@ public final class Main {
         while (true) {
             timer.start(TIMERS.FRAME);
             try {
-
+                timer.start(TIMERS.GRAB);
                 sink.grabFrame(inputFrame);
-
+                timer.end(TIMERS.GRAB);
+                
                 //do not process empty images
                 if (inputFrame.size().height <= 0 || inputFrame.size().width <= 0) {
                     continue;
@@ -110,16 +116,20 @@ public final class Main {
                 timer.start(TIMERS.REPORT);
                 reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameNumber);
                 timer.end(TIMERS.REPORT);
+                timer.start(TIMERS.PROCESS);
                 processor.process(inputFrame);
+                timer.end(TIMERS.PROCESS);
+                timer.start(TIMERS.PUT);
                 cvsource.putFrame(processor.getLastFrame());
-
-                consoleReporter.reportIfNeeded(timer);
+                timer.end(TIMERS.PUT);
+                consoleReporter.reportIfNeeded(timer,frameRate);
 
             } catch (Exception ex) {
-                System.out.println("Err: " + ex.getMessage());
+                ex.printStackTrace(System.out);
             }
             frameNumber++;
             timer.end(TIMERS.FRAME);
+            frameRate.frame();
         }
     }
 

@@ -5,9 +5,6 @@
  */
 package frc.timers;
 
-import java.io.OutputStream;
-import java.util.stream.Stream;
-
 /**
  *
  * @author dcowden
@@ -21,10 +18,12 @@ public class PeriodicReporter {
         this.reportingIntervalMillis = reportingIntervalMillis;
     }
     
-    public void reportIfNeeded(Object obj){
+    public void reportIfNeeded(Object ... obj){
         long currentTime = System.currentTimeMillis();
         if ( (currentTime - lastReportTime) > reportingIntervalMillis){
-            System.out.println(obj + "");
+            for ( Object o: obj){
+                System.out.println(o + "");
+            }            
             lastReportTime = currentTime;
         }
     }

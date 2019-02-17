@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.wpi.first.vision.VisionPipeline;
+import frc.timers.TimeTracker;
 
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
@@ -23,6 +24,21 @@ public class GripPipeline implements VisionPipeline {
     private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
     private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
 
+    private final TimeTracker timer;    
+    
+    public GripPipeline(TimeTracker tracker){
+        this.timer = tracker;
+    }
+
+    private interface TIMERS {
+
+        String HSV = "g:hsv";
+        String FIND = "g:findc";
+        String FILTER = "g:filterc";
+        String ALL = "g:all";
+
+    }    
+    
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
@@ -34,18 +50,23 @@ public class GripPipeline implements VisionPipeline {
     @Override
     public void process(Mat source0) {
         // Step HSV_Threshold0:
-
+        timer.start(TIMERS.ALL);
         Mat hsvThresholdInput = source0;
         double[] hsvThresholdHue = {50.179856115107924, 74.56706281833617};
         double[] hsvThresholdSaturation = {0.0, 255.0};
         double[] hsvThresholdValue = {146.76258992805754, 255.0};
+        
+        timer.start(TIMERS.HSV);
         hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
-
+        timer.end(TIMERS.HSV);
+        
         // Step Find_Contours0:
         Mat findContoursInput = hsvThresholdOutput;
         boolean findContoursExternalOnly = true;
+        timer.start(TIMERS.FIND);
         findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
-
+        timer.end(TIMERS.FIND);
+        
         // Step Filter_Contours0:
         ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
         double filterContoursMinArea = 19.0;
@@ -59,8 +80,10 @@ public class GripPipeline implements VisionPipeline {
         double filterContoursMinVertices = 0.0;
         double filterContoursMinRatio = 0.0;
         double filterContoursMaxRatio = 1000.0;
+        timer.start(TIMERS.FILTER);        
         filterContours(filterContoursContours, filterContoursMinArea, filterContoursMinPerimeter, filterContoursMinWidth, filterContoursMaxWidth, filterContoursMinHeight, filterContoursMaxHeight, filterContoursSolidity, filterContoursMaxVertices, filterContoursMinVertices, filterContoursMinRatio, filterContoursMaxRatio, filterContoursOutput);
-
+        timer.end(TIMERS.FILTER);
+        timer.end(TIMERS.ALL);
     }
 
     /**
