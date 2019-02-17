@@ -1,5 +1,4 @@
 
-
 import java.awt.Point;
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2018 FIRST. All Rights Reserved.                             */
@@ -8,6 +7,8 @@ import java.awt.Point;
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,9 +26,12 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
+import org.opencv.core.Size;
 
+import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -38,6 +42,8 @@ import frc.robot.CameraConstants;
 import frc.robot.ConvertRectToPoint;
 import frc.robot.DoNothingPipeline;
 import frc.robot.GripPipeline;
+import frc.robot.ResizeCamera;
+import frc.robot.Timer;
 import frc.robot.DCGripPipeline;
 import frc.robot.VisionProcessor;
 import frc.robot.VisionReporter;
@@ -70,7 +76,8 @@ import frc.robot.VisionReporter;
 
 public final class Main {
   private static String configFile = "/boot/frc.json";
-
+  private static long offsetTime = 0;
+  private static int counter = 0; 
   @SuppressWarnings("MemberName")
   public static class CameraConfig {
     public String name;
@@ -81,6 +88,11 @@ public final class Main {
   public static int team;
   public static boolean server;
   public static List<CameraConfig> cameraConfigs = new ArrayList<>();
+
+  static String readFile(String path, Charset encoding) throws IOException {
+    byte[] encoded = Files.readAllBytes(Paths.get(path));
+    return new String(encoded, encoding);
+  }
 
   private Main() {
   }
@@ -192,19 +204,19 @@ public final class Main {
     return camera;
   }
 
-  /**
-   * Main.
-   */
-  public static void main(String... args) {
+  public static void main(String... args) throws IOException {
     System.err.println("TEAM 281 CODE UPDATED JUST ENTECH");
     if (args.length > 0) {
       configFile = args[0];
     }
 
+
+    String configFileText = readFile(configFile, StandardCharsets.UTF_8);
+
     // read configuration
-    if (!readConfig()) {
+    /*if (!readConfig()) {
       return;
-    }
+    }*/
 
     // start NetworkTables
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
@@ -215,31 +227,78 @@ public final class Main {
       ntinst.startClientTeam(team);
     }
     
+
     // start cameras
-    List<VideoSource> cameras = new ArrayList<>();
+    /*List<VideoSource> cameras = new ArrayList<>();
     for (CameraConfig cameraConfig : cameraConfigs) {
       cameras.add(startCamera(cameraConfig));
-    }
+    }*/
 
     // start image processing on camera 0 if present
-    VideoSource source = cameras.get(0);
+    //VideoSource source = cameras.get(0);
+
     
     MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
 
-    //CvSource cvsource = new CvSource("processed",
-        //VideoMode.PixelFormat.kMJPEG, CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT, 30);
-
     CvSource cvsource = new CvSource("processed",
-        VideoMode.PixelFormat.kMJPEG, CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT, 60);
+        VideoMode.PixelFormat.kMJPEG, CameraConstants.PROCESS_WIDTH,CameraConstants.PROCESS_HEIGHT, 30);
 
-    rawVideoServer.setSource(cvsource);   
+    //rawVideoServer.setSource(cvsource);
+    
+    UsbCamera source = new UsbCamera("the camera", "/dev/video0");
+    boolean success = source.setConfigJson(configFileText);
+    System.out.println("IS CONFIG JSON WORKING?" + success);
+    System.out.println("EXPOSURE: " + source.getProperty("exposure").getKind());
+    
+
+    VideoMode videoMode = new VideoMode(VideoMode.PixelFormat.kBGR, CameraConstants.PROCESS_WIDTH, CameraConstants.PROCESS_HEIGHT, 90);
+    source.setVideoMode(videoMode);
+    rawVideoServer.setSource(cvsource);
+
     VisionReporter reporter = new VisionReporter();
     DCGripPipeline grip = new DCGripPipeline();
-    VisionRunner runner = new VisionRunner(source, new VisionProcessor( grip), processed -> {
+    Timer frameTimer = new Timer(2);
+    offsetTime = System.currentTimeMillis();
+    VisionProcessor processor = new VisionProcessor(grip);
+    CvSink sink = new CvSink("From Camera");
+    sink.setSource(source);
+    sink.setEnabled(true);
+    Mat m = new Mat();
+    int i =0;
+  
+
+    while(true){
+      sink.grabFrame(m);
+      i +=1;
+      if(frameTimer.shouldWrite()){
+        System.out.println("~~~~~~~~~~~~~~~~~THIS IS THE FRAME RATE:" + frameTimer.getFrameRate());
+        System.out.println("INITIAL_DIMENSIONS:"+m.size());
+      }
+      if(i>1){
+        ResizeCamera rc = new ResizeCamera(m,
+          new Size(CameraConstants.PROCESS_WIDTH, CameraConstants.PROCESS_HEIGHT));
+        Mat resized = rc.getResizedImage();
+        processor.process(resized);
+        reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameTimer.getFrameCount());
+
+        if(frameTimer.getFrameCount()%5 == 0){
+          cvsource.putFrame(processor.getLastFrame());
+        }
+      }
+    }
+
+
+    /*VisionRunner runner = new VisionRunner(source, new VisionProcessor( grip ), processed -> {
         
         try{
+
+            if(frameTimer.shouldWrite()){
+              System.out.println("~~~~~~~~~~~~~~~~~THIS IS THE FRAME RATE:" + frameTimer.getFrameRate());
+              //System.out.println("~~~~~~~~~~~~~~~~~THIS IS FPS:" + source.getActualFPS());
+              //System.out.println("~~~~~~~~~~~~~~~~~THIS IS THE SOURCE FPS: " + source.getVideoMode().fps + "SOURCE HEIGHT: " + source.getVideoMode().height +  "SOURCE WIDTH: " +source.getVideoMode().width);
+            }
             VisionProcessor processor = (VisionProcessor)processed;            
-            reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), processor.getFrameCount());
+            reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameTimer.getFrameCount());
             cvsource.putFrame(processor.getLastFrame());              
             //cvsource.putFrame(grip.hsvThresholdOutput());
         }
@@ -258,7 +317,7 @@ public final class Main {
       } catch (InterruptedException ex) {
         return;
       }
-    }
+    }*/
   }
 
 }

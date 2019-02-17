@@ -33,37 +33,36 @@ public class VisionProcessor implements VisionPipeline{
     private double distanceFromTarget = 0.0;
     private double lateralDistance = 0.0;
     private Mat lastFrame = null;
-    public double frameCount = 0.0;
-    
+ 
     public VisionProcessor(DCGripPipeline parent ){
         this.parent = parent;
     }
     
     @Override
     public void process(Mat sourceFrame) {
-        frameCount = frameCount + 1;
-
-    
         //The values of the output image
-        int startRow = (CameraConstants.PROCESS_HEIGHT)/3;
-        int endRow = (5*CameraConstants.PROCESS_HEIGHT)/6;
+        int startRow = (CameraConstants.PROCESS_HEIGHT)/4;
+        int endRow = (11*CameraConstants.PROCESS_HEIGHT)/12;
+        boolean debug = true;
 
         Point topLeft = new Point(0, startRow);
         Point bottomRight = new Point(CameraConstants.PROCESS_WIDTH, endRow);
         
         Rect rectCrop = new Rect(topLeft, bottomRight);
 
-        
-        Mat resizedImage = sourceFrame.submat(rectCrop);        
+
+        Mat resizedImage = sourceFrame.submat(rectCrop);   
+     
         
         parent.process(resizedImage);
 
-        System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
-        System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
+        //System.out.println("FindContours " + parent.findContoursOutput().size() + "!!!");
+        //System.out.println("FilterContours " + parent.filterContoursOutput().size() + "controus!!!");
         ArrayList<RotatedRect> targets = minimumBoundingRectangle(parent.findContoursOutput());
-        System.out.println("Target Rects=" + targets.size());
+        //System.out.println("Target Rects=" + targets.size());
         ArrayList<RotatedRect> nondumb = getRidOfDumbandAloneRectangles(targets);
-        System.out.println("NonDumb Rects= " + nondumb.size());
+        ArrayList<RotatedRect> initial = getRidofGibberishRectangles(targets);
+        //System.out.println("NonDumb Rects= " + nondumb.size());
 
         //SolvePnp Implementation
         Mat rvec = CameraConstants.getRvec();
@@ -76,17 +75,19 @@ public class VisionProcessor implements VisionPipeline{
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);
             
         }
-        lastFrame = putFrameWithVisionTargets(resizedImage, nondumb, rvec, tvec);            
+        if(debug){
+            lastFrame = putFrameWithVisionTargetsIfSwitchIsOn(resizedImage, nondumb, initial, rvec, tvec);
+        }
+        else{
+            lastFrame = putFrameWithVisionTargets(resizedImage, nondumb, rvec, tvec); 
+        }
+           
         
     }
     
 
     public Mat getLastFrame() {
         return lastFrame;
-    }
-    
-    public double getFrameCount() {
-        return frameCount;
     }
 
     public double getDistanceFromTarget() {
@@ -96,55 +97,52 @@ public class VisionProcessor implements VisionPipeline{
         return lateralDistance;
     }
 
-    public  static ArrayList<RotatedRect> getRidOfDumbRectangles(ArrayList<RotatedRect> input){
-        var filtered = new ArrayList<RotatedRect>();
-        double MIN_HEIGHT = 10;
-        double MIN_WIDTH = 5;
+    public  static ArrayList<RotatedRect> getRidofGibberishRectangles(ArrayList<RotatedRect> input){
+        var filteredFromRandom = new ArrayList<RotatedRect>();
+        var filteredFromSmall = new ArrayList<RotatedRect>();
+        
+        double MIN_WIDTH = 25;
+        double MIN_HEIGHT = 15;
+        double ASPECT_RATIO = 2;
+        double aspectRatioRect = 0;
 
         for ( RotatedRect rect: input){
-            //if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
-                //filtered.add(rect);
-            //}
-            if(rect.size.height>MIN_HEIGHT && rect.size.width>MIN_WIDTH){
-                filtered.add(rect);
+            /*if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
+                filteredFromRandom.add(rect);
+            }*/
+
+            aspectRatioRect = rect.size.height/rect.size.width;
+            if(rect.size.height>MIN_HEIGHT && rect.size.width>MIN_WIDTH && aspectRatioRect>=ASPECT_RATIO){
+                filteredFromRandom.add(rect);
             }
 
-        }        
-        return filtered;
+        }
+
+        //System.out.println("FilteredFromRandom" + filteredFromRandom.size());
+
+        for(RotatedRect rect: filteredFromRandom){
+            if(rect.angle!=0){
+                filteredFromSmall.add(rect);
+            }
+        }
+
+        return filteredFromSmall;
     }
     public  static ArrayList<RotatedRect> getRidOfDumbandAloneRectangles(ArrayList<RotatedRect> input){
 
         //this gets rid of rectangles in the top of the image, which are usually lights
 
         var filtered = new ArrayList<RotatedRect>();
-        var filteredFromRandom = new ArrayList<RotatedRect>();
         var filteredFromSmall = new ArrayList<RotatedRect>();
-
         var filteredFinal = new ArrayList<RotatedRect>();
-        double MIN_HEIGHT = 10;
-        double MIN_WIDTH = 5;
 
-        for ( RotatedRect rect: input){
-            /*if ( rect.boundingRect().y > MIN_Y && rect.boundingRect().y < MAX_Y){
-                filteredFromRandom.add(rect);
-            }*/
-            if(rect.size.height>MIN_HEIGHT && rect.size.width>MIN_WIDTH){
-                filteredFromRandom.add(rect);
-            }
-
-        }
-
-        for(RotatedRect rect: filteredFromRandom){
-            if(rect.angle!=0 && rect.size.height>5){
-                filteredFromSmall.add(rect);
-            }
-        }
+        filteredFromSmall = getRidofGibberishRectangles(input);
 
         Collections.sort(filteredFromSmall, new RotatedRectangleSortLeftToRight());
         int i = 0;
         int len = filteredFromSmall.size();
         
-        System.out.println("filtered_from_small"+ len);
+        //System.out.println("filtered_from_small"+ len);
 
 		while (i<(len-1)){
             RotatedRect rect1 = filteredFromSmall.get(i);
@@ -161,7 +159,7 @@ public class VisionProcessor implements VisionPipeline{
             }
         }
 
-        System.out.println("filtered"+ filtered.size());
+        //System.out.println("filtered"+ filtered.size());
 
         int n = 1;
         int lenFiltered = filtered.size();
@@ -193,7 +191,7 @@ public class VisionProcessor implements VisionPipeline{
             filteredFinal.add(filtered.get(indexMax)); 
         }
     }
-    System.out.println("filtered_final"+filteredFinal.size());
+    //System.out.println("filtered_final"+filteredFinal.size());
         return filteredFinal;
 
     }
@@ -240,6 +238,43 @@ public class VisionProcessor implements VisionPipeline{
             return img;
     }        
 
+public Mat putFrameWithVisionTargetsIfSwitchIsOn( Mat img, List<RotatedRect> filtered, List<RotatedRect> initial, Mat rvec, Mat tvec){
+        Point points[] = new Point[4];
+        var centers = new ArrayList<Point>();
+
+        for(RotatedRect r:filtered){
+                centers.add(r.center);
+                r.points(points);
+                for( int i = 0; i<4; i++){
+                        Imgproc.line(img, points[i], points[(i+1)%4], new Scalar(255, 255, 0), 5);
+                }
+
+        }
+
+        for(RotatedRect r:initial){
+            r.points(points);
+            for( int i = 0; i<4; i++){
+                    Imgproc.line(img, points[i], points[(i+1)%4], new Scalar(255, 0, 0), 5);
+            }
+
+        }
+
+        DecimalFormat df = new DecimalFormat("#, ###.##");
+        if(centers.size()==2){
+                Imgproc.line(img, centers.get(0), centers.get(1), new Scalar(0, 255, 0), 6);
+                Point midpoint = new Point(100,200);
+                String distance = df.format(Math.sqrt((centers.get(0).x-centers.get(1).x)*(centers.get(0).x-centers.get(1).x) +(centers.get(0).y-centers.get(1).y)*(centers.get(0).y-centers.get(1).y)));
+                Imgproc.putText(img, distance, midpoint, Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
+        }
+        double [] distanceTarget = tvec.get(2, 0);
+        double [] lateralDist = tvec.get(0, 0);
+        distanceFromTarget = distanceTarget[0];
+        lateralDistance = lateralDist[0];
+
+        Imgproc.putText(img, df.format(distanceFromTarget), new Point(20, 10), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255), 2);
+
+        return img;
+}
 
     
 }

@@ -1,5 +1,4 @@
-{
-    "cameras": [
+
         {
             "brightness": 70,
             "fps": 90,
@@ -129,7 +128,3 @@
             ]
             
         }
-    ],
-    "ntmode": "client",
-    "team": 281
-}

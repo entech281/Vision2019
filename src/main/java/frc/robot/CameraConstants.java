@@ -16,8 +16,8 @@ import org.opencv.core.*;
 
 public class CameraConstants {
 
-    public static int PROCESS_WIDTH=1280;
-    public static int PROCESS_HEIGHT=720;
+    public static int PROCESS_WIDTH=640;
+    public static int PROCESS_HEIGHT=360;
     public static MatOfPoint3f getObjectPoints() {
         MatOfPoint3f objectPoint = new MatOfPoint3f();
         var point = new Point3[8];

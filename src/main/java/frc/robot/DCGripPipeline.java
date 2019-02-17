@@ -31,6 +31,8 @@ public class DCGripPipeline implements VisionPipeline {
 	 */
 	@Override	public void process(Mat source0) {
 		// Step HSV_Threshold0:
+
+	
 		Mat hsvThresholdInput = source0;
 		double[] hsvThresholdHue = {50.179856115107924, 74.56706281833617};
 		double[] hsvThresholdSaturation = {0.0, 255.0};
