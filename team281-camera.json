@@ -1,14 +1,12 @@
-{
-    "cameras": [
+
         {
             "brightness": 70,
             "fps": 90,
-            "height": 720,
-            "width": 1280,
+            "height": 360,
+            "width": 640,
             "name": "rPi Camera 0",
             "path": "/dev/video0",
             "pixel format": "mjpeg",
-            "exposure": 13,
             "properties": [
                 {
                     "name": "connect_verbose",
@@ -88,7 +86,7 @@
                 },
                 {
                     "name": "exposure_time_absolute",
-                    "value": 13
+                    "value": 333
                 },
                 {
                     "name": "exposure_dynamic_framerate",
@@ -129,7 +127,3 @@
             ]
             
         }
-    ],
-    "ntmode": "client",
-    "team": 281
-}

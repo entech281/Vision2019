@@ -5,7 +5,7 @@ import java.util.Comparator;
 
 import org.opencv.core.RotatedRect;
 
-public class RotatedRectangleSortLeftToRight implements Comparator<RotatedRect> {
+public class RotatedRectangleComparator implements Comparator<RotatedRect> {
 
     @Override
     public int compare(RotatedRect arg0, RotatedRect arg1) {
