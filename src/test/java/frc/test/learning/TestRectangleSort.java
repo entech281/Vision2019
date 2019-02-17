@@ -10,6 +10,7 @@ import org.opencv.core.Size;
 
 import frc.robot.ConvertRectToPoint;
 import frc.robot.VisionProcessor;
+import frc.robot.filters.DumbAndAloneRectangleFilter;
 
 
 public class TestRectangleSort {
@@ -25,12 +26,12 @@ public class TestRectangleSort {
         double a2 = -45;
         RotatedRect rect2 = new RotatedRect(center2, s1, a2);
 
-        var RotatedRects = new ArrayList<RotatedRect>();
-        RotatedRects.add(rect2);
-        RotatedRects.add(rect1);
+        var rotatedRects = new ArrayList<RotatedRect>();
+        rotatedRects.add(rect2);
+        rotatedRects.add(rect1);
 
         var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =VisionProcessor.getRidOfDumbandAloneRectangles(RotatedRects);
+        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
         
         System.out.println(RotatedRectFinal.toString());
     } 
@@ -52,7 +53,7 @@ public class TestRectangleSort {
         RotatedRects.add(rect1);
 
         var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =VisionProcessor.getRidOfDumbandAloneRectangles(RotatedRects);
+        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(RotatedRects);
         
         System.out.println(RotatedRectFinal.toString());
     } 
@@ -73,13 +74,13 @@ public class TestRectangleSort {
         double a3 = 45;
         RotatedRect rect3 = new RotatedRect(center3, s1, a3);
 
-        var RotatedRects = new ArrayList<RotatedRect>();
-        RotatedRects.add(rect2);
-        RotatedRects.add(rect1);
-        RotatedRects.add(rect3);
+        var rotatedRects = new ArrayList<RotatedRect>();
+        rotatedRects.add(rect2);
+        rotatedRects.add(rect1);
+        rotatedRects.add(rect3);
 
         var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =VisionProcessor.getRidOfDumbandAloneRectangles(RotatedRects);
+        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
         
         System.out.println(RotatedRectFinal.toString());
     } 
@@ -100,13 +101,13 @@ public class TestRectangleSort {
         double a3 = 45;
         RotatedRect rect3 = new RotatedRect(center3, s1, a3);
 
-        var RotatedRects = new ArrayList<RotatedRect>();
-        RotatedRects.add(rect2);
-        RotatedRects.add(rect1);
-        RotatedRects.add(rect3);
+        var rotatedRects = new ArrayList<RotatedRect>();
+        rotatedRects.add(rect2);
+        rotatedRects.add(rect1);
+        rotatedRects.add(rect3);
 
         var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =VisionProcessor.getRidOfDumbandAloneRectangles(RotatedRects);
+        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
         
         System.out.println(RotatedRectFinal.toString());
         //Expected Output (140,200) (200,200)
@@ -135,15 +136,15 @@ public class TestRectangleSort {
         double a5 = 45;
         RotatedRect rect5 = new RotatedRect(center5, s1, a5);
 
-        var RotatedRects = new ArrayList<RotatedRect>();
-        RotatedRects.add(rect4);
-        RotatedRects.add(rect2);
-        RotatedRects.add(rect1);
-        RotatedRects.add(rect5);
-        RotatedRects.add(rect3);
+        var rotatedRects = new ArrayList<RotatedRect>();
+        rotatedRects.add(rect4);
+        rotatedRects.add(rect2);
+        rotatedRects.add(rect1);
+        rotatedRects.add(rect5);
+        rotatedRects.add(rect3);
 
         var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =VisionProcessor.getRidOfDumbandAloneRectangles(RotatedRects);
+        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
         
         System.out.println(RotatedRectFinal.toString());
     } 

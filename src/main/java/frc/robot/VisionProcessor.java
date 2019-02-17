@@ -158,5 +158,15 @@ public class VisionProcessor implements VisionPipeline {
 
         return img;
     }
+    public ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours){
+        //System.out.println(inputContours.size() + " inputContours");
+                
+        var visionTarget = new ArrayList<RotatedRect>();
 
+        for (MatOfPoint contour: inputContours){
+                visionTarget.add(Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray())));
+        }
+        return visionTarget;
+
+    }
 }
