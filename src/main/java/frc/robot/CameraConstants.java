@@ -1,10 +1,7 @@
 package frc.robot;
 
-import java.awt.List;
 import java.util.ArrayList;
 
-import org.opencv.calib3d.Calib3d;
-import org.opencv.core.CvType.*;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint2f;
@@ -16,8 +13,14 @@ import org.opencv.core.*;
 
 public class CameraConstants {
 
-    public static int PROCESS_WIDTH=1280;
-    public static int PROCESS_HEIGHT=720;
+    public static int PROCESS_WIDTH=160;
+    public static int PROCESS_HEIGHT=120;
+    public static int RECOGNIZE_WIDTH=120;
+    //public static int RECOGNIZE_TOP=150;
+    //public static int RECOGNIZE_BOTTOM=280;
+    public static int RECOGNIZE_TOP=40;
+    public static int RECOGNIZE_BOTTOM=100;
+    
     public static MatOfPoint3f getObjectPoints() {
         MatOfPoint3f objectPoint = new MatOfPoint3f();
         var point = new Point3[8];
@@ -61,12 +64,6 @@ public class CameraConstants {
         cameraMat.put(0, 0, PROCESS_WIDTH, 0.0, PROCESS_WIDTH/2.0, 
                       0.0, PROCESS_HEIGHT, PROCESS_HEIGHT/2.0, 
                     0.0, 0.0, 1.0 );
-
-        //cameraMat.put(0, 0, 320.0);
-        //cameraMat.put(1, 1, 240.0);
-        //cameraMat.put(0, 2, 160.0);
-        //cameraMat.put(1, 2, 120.0);
-        
         return cameraMat;
     }
 

@@ -1,12 +1,14 @@
-
+{
+    "cameras": [
         {
             "brightness": 70,
             "fps": 90,
-            "height": 480,
-            "width": 640,
+            "height": 720,
+            "width": 1280,
             "name": "rPi Camera 0",
             "path": "/dev/video0",
-            "pixel format": "BGR",
+            "pixel format": "mjpeg",
+            "exposure": 13,
             "properties": [
                 {
                     "name": "connect_verbose",
@@ -127,3 +129,7 @@
             ]
             
         }
+    ],
+    "ntmode": "client",
+    "team": 281
+}
