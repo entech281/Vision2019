@@ -65,21 +65,18 @@ public final class Main {
         ntinst.startClientTeam(TEAM);
         
         TimeTracker timer = new TimeTracker();
-
+        timer.setEnabled(true);
         MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
         CvSource cvsource = new CvSource("processed",
                 VideoMode.PixelFormat.kMJPEG,
                 CameraConstants.PROCESS_WIDTH,
                 CameraConstants.PROCESS_HEIGHT, 30);
 
-        //rawVideoServer.setSource(cvsource);
+ 
         UsbCamera source = new UsbCamera("PiCamera", "/dev/video0");
 
         boolean success = source.setConfigJson(configFileText);
         System.out.println("Camera Configured: " + success);
-        
-        VideoMode videoMode = new VideoMode(VideoMode.PixelFormat.kBGR, CameraConstants.PROCESS_WIDTH, CameraConstants.PROCESS_HEIGHT, 90);
-        source.setVideoMode(videoMode);
         rawVideoServer.setSource(cvsource);
 
         VisionReporter reporter = new VisionReporter();
@@ -113,16 +110,19 @@ public final class Main {
                 );
                 timer.end(TIMERS.RESIZE);
 
-                timer.start(TIMERS.REPORT);
-                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameNumber);
-                timer.end(TIMERS.REPORT);
+
                 timer.start(TIMERS.PROCESS);
-                processor.process(inputFrame);
+                processor.process(resized);
                 timer.end(TIMERS.PROCESS);
+                
                 timer.start(TIMERS.PUT);
                 cvsource.putFrame(processor.getLastFrame());
                 timer.end(TIMERS.PUT);
+                
+                timer.start(TIMERS.REPORT);
+                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameNumber);
                 consoleReporter.reportIfNeeded(timer,frameRate);
+                timer.end(TIMERS.REPORT); 
 
             } catch (Exception ex) {
                 ex.printStackTrace(System.out);

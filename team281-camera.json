@@ -6,7 +6,7 @@
             "width": 640,
             "name": "rPi Camera 0",
             "path": "/dev/video0",
-            "pixel format": "mjpeg",
+            "pixel format": "BGR",
             "properties": [
                 {
                     "name": "connect_verbose",

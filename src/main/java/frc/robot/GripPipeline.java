@@ -48,7 +48,7 @@ public class GripPipeline implements VisionPipeline {
      * outputs.
      */
     @Override
-    public void process(Mat source0) {
+    public void process(Mat source0) {        
         // Step HSV_Threshold0:
         timer.start(TIMERS.ALL);
         Mat hsvThresholdInput = source0;
@@ -70,13 +70,13 @@ public class GripPipeline implements VisionPipeline {
         // Step Filter_Contours0:
        
         ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
-        double filterContoursMinArea = 19.0;
+        double filterContoursMinArea = 12.0;
         double filterContoursMinPerimeter = 0.0;
-        double filterContoursMinWidth = 7.0;
+        double filterContoursMinWidth = 5.0;
         double filterContoursMaxWidth = 1000.0;
         double filterContoursMinHeight = 11.0;
         double filterContoursMaxHeight = 1004.0;
-        double[] filterContoursSolidity = {53.057553956834525, 100};
+        double[] filterContoursSolidity = {73, 100};
         double filterContoursMaxVertices = 100.0;
         double filterContoursMinVertices = 0.0;
         double filterContoursMinRatio = 0.0;

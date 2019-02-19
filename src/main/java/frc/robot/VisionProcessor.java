@@ -29,10 +29,10 @@ public class VisionProcessor implements VisionPipeline {
 
         String GRIP = "p:grip";
         String RESIZE = "p:resize";
-        String PROCESS = "p:process";
         String PNP = "p:pnp";
         String OUTPUT = "p:output";
         String REPORT = "p:report";
+        String ALL = "p:all";
     }
 
     public interface COLORS {
@@ -79,7 +79,7 @@ public class VisionProcessor implements VisionPipeline {
     @Override
     public void process(Mat sourceFrame) {
 
-        timer.start(TIMERS.PROCESS);
+        timer.start(TIMERS.ALL);
         timer.start(TIMERS.RESIZE);
         Mat resizedImage = cropImage(sourceFrame);
         timer.end(TIMERS.RESIZE);
@@ -124,7 +124,7 @@ public class VisionProcessor implements VisionPipeline {
                         selected.size()
                 ));
         timer.end(TIMERS.REPORT);
-        timer.end(TIMERS.PROCESS);
+        timer.end(TIMERS.ALL);
         lastFrame = resizedImage;
     }
 

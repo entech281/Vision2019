@@ -13,26 +13,39 @@ public class TimeTracker {
     public static int PERIOD=20;
     private Map<String,SampleStatistics> samples = new TreeMap<String,SampleStatistics>();
     private Map<String,StopWatch> timers = new HashMap<String,StopWatch>();
+    private boolean enabled = true;
     
     public TimeTracker(){
         
     }
+    public boolean isEnabled(){
+        return enabled;
+    }
+    public void setEnabled(boolean enabled){
+        this.enabled = enabled;
+    }
     
     public void recordTiming(String name, long value){
-        getOrCreateSample(name).add(value);
+        if ( isEnabled() ){
+            getOrCreateSample(name).add(value);
+        }        
     }
     
     public void start(String name){
-        getOrCreateStopWatch(name);
+        if ( isEnabled() ){
+            getOrCreateStopWatch(name);
+        }        
     }
     
     public void end(String name){
-        long elapsed = getOrCreateStopWatch(name).elapsedMs();
-        recordTiming(name,elapsed);
-        timers.remove(name);
+        if ( isEnabled() ){
+            long elapsed = getOrCreateStopWatch(name).elapsedMs();
+            recordTiming(name,elapsed);
+            timers.remove(name);
+        }
     }
     
-    public long getLatest(String name){
+    public long getLatest(String name){        
         return samples.get(name).getLatest();
     }
     public long getAverage(String name){
@@ -61,15 +74,18 @@ public class TimeTracker {
     public String toString(){
         StringBuffer sb = new StringBuffer();
         sb.append("Timings [ms]:\n");
-        sb.append("------------------\n");
-        sb.append("Key\t\tAvg\t\tLast\n");
-        for ( Map.Entry<String,SampleStatistics>s: samples.entrySet()){
-            SampleStatistics ss = s.getValue();
-            sb.append(
-                    String.format("%s\t\t%d\t\t%d\n",s.getKey(), ss.getAverage(), ss.getLatest() )
-                    );
-            
+        if ( isEnabled() ){
+            sb.append("------------------\n");
+            sb.append("Key\t\tAvg\t\tLast\n");
+            for ( Map.Entry<String,SampleStatistics>s: samples.entrySet()){
+                SampleStatistics ss = s.getValue();
+                sb.append(
+                        String.format("%s\t\t%d\t\t%d\n",s.getKey(), ss.getAverage(), ss.getLatest() )
+                        );
+
+            }            
         }
+
         return sb.toString();
     }
 }
