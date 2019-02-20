@@ -14,7 +14,7 @@ import org.opencv.core.RotatedRect;
  */
 public class GibberishRectangleFilter implements RectangleFilter{
 
-    public static double MIN_DIMENSION = 5;
+    public static double MIN_DIMENSION = 2;
     public static double ASPECT_RATIO = 2;    
     /*
     

@@ -25,6 +25,7 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
         Collections.sort(toFilter, new RotatedRectangleComparator());
         int i = 0;
         int len = toFilter.size();
+        boolean pairRect = false;
 
         var filtered = new ArrayList<RotatedRect>();
         var filteredFinal = new ArrayList<RotatedRect>();
@@ -33,7 +34,12 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
             RotatedRect rect2 = toFilter.get(i + 1);
             //System.out.println("RECT1: " + rect1.angle);
             //System.out.println("RECT2: " + rect2.angle);
-            if (rect1.angle < -75 && rect1.angle > -100 && rect2.angle > -50 && rect2.angle < 0) {
+
+        if((rect2.angle > -50 && rect2.angle < 0 || rect2.angle == 90)){
+            pairRect = true;
+        }
+
+            if (rect1.angle < -70 && rect1.angle > -100 && pairRect) {
                 filtered.add(rect1);
                 filtered.add(rect2);
                 i = i + 2;

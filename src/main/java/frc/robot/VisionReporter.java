@@ -18,10 +18,12 @@ public class VisionReporter {
     private final NetworkTableEntry distance = ntist.getEntry("team281.Vision.distance");
     private final NetworkTableEntry lateral = ntist.getEntry("team281.Vision.lateral");
     private final NetworkTableEntry frameCount = ntist.getEntry("team281.frameCount");
+    private final NetworkTableEntry foundTarget = ntist.getEntry("team281.Vision.foundTarget");
 
-    public void reportDistance(double distanceToTarget, double lateralDistance, double count) {
+    public void reportDistance(double distanceToTarget, double lateralDistance, long count, boolean foundTargetBoolean) {
         distance.forceSetDouble(distanceToTarget);
         lateral.forceSetDouble(lateralDistance);
         frameCount.forceSetDouble(count);
+        foundTarget.forceSetBoolean(foundTargetBoolean);
     }
 }
