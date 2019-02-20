@@ -48,6 +48,7 @@ public class VisionProcessor implements VisionPipeline {
     private double distanceFromTarget = 0.0;
     private double lateralDistance = 0.0;
     private Mat lastFrame = null;
+    public boolean foundTarget = false;
 
     private final PeriodicReporter periodicReporter
             = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
@@ -96,6 +97,7 @@ public class VisionProcessor implements VisionPipeline {
         Mat tvec = CameraConstants.getTvec();
 
         if (selected.size() == 2) {
+            foundTarget = true;
             timer.start(TIMERS.PNP);
             Calib3d.solvePnP(CameraConstants.getObjectPoints(),
                     CameraConstants.getImgPoint(selected),
@@ -130,6 +132,10 @@ public class VisionProcessor implements VisionPipeline {
 
     public Mat getLastFrame() {
         return lastFrame;
+    }
+
+    public boolean getFoundTarget(){
+        return foundTarget;
     }
 
     public double getDistanceFromTarget() {

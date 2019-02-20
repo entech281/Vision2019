@@ -35,7 +35,6 @@ public final class Main {
     private static String configFileName = "/boot/frc.json";
 
     private static final int TEAM = 281;
-    private static int frameNumber = 0;
 
     private interface TIMERS {
 
@@ -120,14 +119,13 @@ public final class Main {
                 timer.end(TIMERS.PUT);
                 
                 timer.start(TIMERS.REPORT);
-                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameNumber);
+                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
                 consoleReporter.reportIfNeeded(timer,frameRate);
                 timer.end(TIMERS.REPORT); 
 
             } catch (Exception ex) {
                 ex.printStackTrace(System.out);
             }
-            frameNumber++;
             timer.end(TIMERS.FRAME);
             frameRate.frame();
         }

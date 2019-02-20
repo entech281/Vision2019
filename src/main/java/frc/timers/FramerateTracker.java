@@ -29,4 +29,8 @@ public class FramerateTracker {
     public String toString(){
         return String.format("Framerate: %.2f fps", getFrameRate());
     }
+
+    public long getTicks(){
+        return ticks;
+    }
 }
