@@ -40,12 +40,15 @@ public class VisionProcessor implements VisionPipeline {
         Scalar BLUE = new Scalar(255, 0, 0);
         Scalar GREEN = new Scalar(0, 255, 0);
         Scalar RED = new Scalar(0, 0, 255);
+        Scalar YELLOW = new Scalar(0, 165, 255);
     }
     public static double LATERAL_DISTANCE_FACTOR = 1.0;
     public static double PERPENDICULAR_DISTANCE_FACTOR = 0.6178;
     public static int CONSOLE_REPORTING_INTERVAL_MILLIS = 1000;
     private GripPipeline parent;
-    private double distanceFromTarget = 0.0;
+    private double averageArea = 0.0;
+    private double averageDistanceToCenter = 0.0;
+    private double distanceFromTarget= 0.0;
     private double lateralDistance = 0.0;
     private Mat lastFrame = null;
     public boolean foundTarget = false;
@@ -70,11 +73,29 @@ public class VisionProcessor implements VisionPipeline {
         return new Mat(input, rectCrop);
     }
 
-    public void computeAndSetDistances(Mat rvec, Mat tvec) {
-        double[] distanceTarget = tvec.get(2, 0);
-        double[] lateralDist = tvec.get(0, 0);
-        distanceFromTarget = distanceTarget[0] * PERPENDICULAR_DISTANCE_FACTOR;
-        lateralDistance = lateralDist[0] * LATERAL_DISTANCE_FACTOR;
+    public void computeArea(ArrayList<RotatedRect> input) {
+        double areaRect = 0.0;
+        double totalArea = 0.0;
+        for(RotatedRect rect : input) {
+            areaRect = rect.size.height *rect.size.width;
+            totalArea = totalArea + areaRect;
+        }
+        averageArea = totalArea/input.size();
+    }
+
+    public void computeAverageDistanceToCenter(ArrayList<RotatedRect> input){
+        double distanceToCenter = 0.0;
+        double netDistanceToCenter=0.0;
+        for(RotatedRect rect : input){
+            distanceToCenter = rect.center.x - CameraConstants.PROCESS_WIDTH/2;
+            netDistanceToCenter = netDistanceToCenter + distanceToCenter;
+        }
+        averageDistanceToCenter = netDistanceToCenter/input.size();
+    }
+
+    public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter){
+        distanceFromTarget = 430*Math.pow(area/2, -0.494);
+        lateralDistance = 0.217 * averageDistanceToCenter -2.18;
     }
 
     @Override
@@ -99,27 +120,29 @@ public class VisionProcessor implements VisionPipeline {
         if (selected.size() == 2) {
             foundTarget = true;
             timer.start(TIMERS.PNP);
-            Calib3d.solvePnP(CameraConstants.getObjectPoints(),
+            /*Calib3d.solvePnP(CameraConstants.getObjectPoints(),
                     CameraConstants.getImgPoint(selected),
                     CameraConstants.getCameraMatrix(),
-                    CameraConstants.getDistCoeffs(), rvec, tvec, true);
+                    CameraConstants.getDistCoeffs(), rvec, tvec, true);*/
             timer.end(TIMERS.PNP);
         }
 
         timer.start(TIMERS.OUTPUT);
         drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE);
         drawRectanglesOnImage(resizedImage, ok, COLORS.RED);
-        drawRectanglesOnImage(resizedImage, selected, COLORS.GREEN);
-        computeAndSetDistances(rvec, tvec);
+        drawRectanglesOnImage(resizedImage, selected, COLORS.YELLOW);
+        computeArea(selected);
+        computeAverageDistanceToCenter(selected);
+        computeAndSetDistanceFromTargets(averageArea, averageDistanceToCenter);
         putOutputTextOnFrame(resizedImage);
         //putSelectedTargetsOnFrame(resizedImage, selected, rvec, tvec);
 
         timer.end(TIMERS.OUTPUT);
         timer.start(TIMERS.REPORT);
         periodicReporter.reportIfNeeded(
-                String.format("Dist:%.3f, Lateral:%.3f, Contours:%d. Targets:\nInitial:%d\nok:%d\nselected:%d ",
-                        distanceFromTarget,
+                String.format("lateral:%.3f, Distance:%.3f, Contours:%d. Targets:\nInitial:%d\nok:%d\nselected:%d ",
                         lateralDistance,
+                        distanceFromTarget,
                         parent.findContoursOutput().size(),
                         initial.size(),
                         ok.size(),
@@ -138,13 +161,13 @@ public class VisionProcessor implements VisionPipeline {
         return foundTarget;
     }
 
-    public double getDistanceFromTarget() {
+    /*public double getDistanceFromTarget() {
         return distanceFromTarget;
     }
 
     public double getLateralDistance() {
         return lateralDistance;
-    }
+    }*/
 
     public void drawRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color) {
         Point points[] = new Point[4];
@@ -157,8 +180,8 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public void putOutputTextOnFrame(Mat img) {
-        Imgproc.putText(img, String.format("D: %.2f", distanceFromTarget), new Point(30, 60), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
-        Imgproc.putText(img, String.format("L: %.2f", lateralDistance), new Point(30, 80), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
+        Imgproc.putText(img, String.format("lateralDistance: %.2f", lateralDistance), new Point(30, 60), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
+        Imgproc.putText(img, String.format("Distance: %.2f", distanceFromTarget), new Point(30, 90), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
     }
 
     public ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours) {
