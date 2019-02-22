@@ -45,6 +45,7 @@ public class VisionProcessor implements VisionPipeline {
     public static double LATERAL_DISTANCE_FACTOR = 1.0;
     public static double PERPENDICULAR_DISTANCE_FACTOR = 0.6178;
     public static int CONSOLE_REPORTING_INTERVAL_MILLIS = 1000;
+    public static final boolean SWITCH_ONE_RECTANGLE_IS_SUFFICIENT = true;
     private GripPipeline parent;
     private double averageArea = 0.0;
     private double averageDistanceToCenter = 0.0;
@@ -132,15 +133,27 @@ public class VisionProcessor implements VisionPipeline {
 
         Mat rvec = CameraConstants.getRvec();
         Mat tvec = CameraConstants.getTvec();
-
-        if (selected.size() == 2) {
-            foundTarget = true;
-            timer.start(TIMERS.PNP);
-            /*Calib3d.solvePnP(CameraConstants.getObjectPoints(),
+        if(SWITCH_ONE_RECTANGLE_IS_SUFFICIENT){
+            if (selected.size() == 2 || selected.size() == 1) {
+                foundTarget = true;
+                timer.start(TIMERS.PNP);
+                /*Calib3d.solvePnP(CameraConstants.getObjectPoints(),
                     CameraConstants.getImgPoint(selected),
                     CameraConstants.getCameraMatrix(),
                     CameraConstants.getDistCoeffs(), rvec, tvec, true);*/
-            timer.end(TIMERS.PNP);
+                timer.end(TIMERS.PNP);
+            }
+        }
+        else{
+            if (selected.size() == 2) {
+                foundTarget = true;
+                timer.start(TIMERS.PNP);
+                /*Calib3d.solvePnP(CameraConstants.getObjectPoints(),
+                    CameraConstants.getImgPoint(selected),
+                    CameraConstants.getCameraMatrix(),
+                    CameraConstants.getDistCoeffs(), rvec, tvec, true);*/
+                timer.end(TIMERS.PNP);
+            } 
         }
 
         timer.start(TIMERS.OUTPUT);
@@ -177,13 +190,13 @@ public class VisionProcessor implements VisionPipeline {
         return foundTarget;
     }
 
-    /*public double getDistanceFromTarget() {
+    public double getDistanceFromTarget() {
         return distanceFromTarget;
     }
 
     public double getLateralDistance() {
         return lateralDistance;
-    }*/
+    }
 
     public void drawRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color) {
         Point points[] = new Point[4];
