@@ -94,11 +94,24 @@ public class VisionProcessor implements VisionPipeline {
         averageDistanceToCenter = netDistanceToCenter/input.size();
     }
 
+    public void computeDistanceIfOnlyOneRectangle(double pixelPerInch, double averageDistanceToCenter){
+        if(averageDistanceToCenter<0){
+            lateralDistance = averageDistanceToCenter/pixelPerInch - 5.5;
+        }
+        else{
+            lateralDistance = averageDistanceToCenter/pixelPerInch + 5.5;
+        }
+    }
 
-    public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter){
+    public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter, int sizeSelected){
         distanceFromTarget = 430*Math.pow(area/2, -0.494);
         pixelPerInch = 183.3526/distanceFromTarget;
+        if(sizeSelected == 1){
+            computeDistanceIfOnlyOneRectangle(pixelPerInch, averageDistanceToCenter);
+        }
+        else{
         lateralDistance = averageDistanceToCenter/pixelPerInch;
+        }
     }
 
     @Override
@@ -136,7 +149,7 @@ public class VisionProcessor implements VisionPipeline {
         drawRectanglesOnImage(resizedImage, selected, COLORS.YELLOW);
         computeArea(selected);
         computeAverageDistanceToCenter(selected);
-        computeAndSetDistanceFromTargets(averageArea, averageDistanceToCenter);
+        computeAndSetDistanceFromTargets(averageArea, averageDistanceToCenter, selected.size());
         putOutputTextOnFrame(resizedImage);
         //putSelectedTargetsOnFrame(resizedImage, selected, rvec, tvec);
 
