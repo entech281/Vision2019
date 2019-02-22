@@ -50,6 +50,7 @@ public class VisionProcessor implements VisionPipeline {
     private double averageDistanceToCenter = 0.0;
     private double distanceFromTarget= 0.0;
     private double lateralDistance = 0.0;
+    private double pixelPerInch = 0.0;
     private Mat lastFrame = null;
     public boolean foundTarget = false;
 
@@ -93,9 +94,11 @@ public class VisionProcessor implements VisionPipeline {
         averageDistanceToCenter = netDistanceToCenter/input.size();
     }
 
+
     public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter){
         distanceFromTarget = 430*Math.pow(area/2, -0.494);
-        lateralDistance = 0.217 * averageDistanceToCenter -2.18;
+        pixelPerInch = 183.3526/distanceFromTarget;
+        lateralDistance = averageDistanceToCenter/pixelPerInch;
     }
 
     @Override
