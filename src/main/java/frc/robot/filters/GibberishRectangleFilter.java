@@ -54,10 +54,10 @@ public class GibberishRectangleFilter implements RectangleFilter{
         }
         return true;
     }
-    public boolean isRatioLargerThan(double val1, double val2, double aspectRatio){
+    public static boolean isRatioLargerThan(double val1, double val2, double aspectRatio){
         double ar = val1 / val2;
         double invAR = 1.0/ar;
-        return (ar > aspectRatio) || ((1.0/ar) > (1.0/aspectRatio)) ;
+        return (ar > aspectRatio) || ((ar) < (1.0/aspectRatio)) ;
 
     }
 }

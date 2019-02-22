@@ -119,7 +119,7 @@ public final class Main {
                 timer.end(TIMERS.PUT);
                 
                 timer.start(TIMERS.REPORT);
-                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
+                //reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
                 consoleReporter.reportIfNeeded(timer,frameRate);
                 timer.end(TIMERS.REPORT); 
 
