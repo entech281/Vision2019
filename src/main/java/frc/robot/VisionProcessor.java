@@ -105,7 +105,7 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter, int sizeSelected){
-        distanceFromTarget = 430*Math.pow(area/2, -0.494);
+        distanceFromTarget = 430*Math.pow(area/2, -0.494) + CameraConstants.DISTANCE_BETWEEN_CAMERA_AND_FRONT;
         pixelPerInch = 183.3526/distanceFromTarget;
         if(sizeSelected == 1){
             computeDistanceIfOnlyOneRectangle(pixelPerInch, averageDistanceToCenter);

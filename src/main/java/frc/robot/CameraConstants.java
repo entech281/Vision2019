@@ -20,6 +20,7 @@ public class CameraConstants {
     //public static int RECOGNIZE_BOTTOM=280;
     public static int RECOGNIZE_TOP=110;
     public static int RECOGNIZE_BOTTOM=240;
+    public static double DISTANCE_BETWEEN_CAMERA_AND_FRONT= 12.0;
     
     public static MatOfPoint3f getObjectPoints() {
         MatOfPoint3f objectPoint = new MatOfPoint3f();
