@@ -62,7 +62,8 @@ public final class Main {
         // start NetworkTables
         NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
         ntinst.startClientTeam(TEAM);
-        
+        ntinst.startClient();
+
         TimeTracker timer = new TimeTracker();
         timer.setEnabled(true);
         MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
@@ -119,7 +120,7 @@ public final class Main {
                 timer.end(TIMERS.PUT);
                 
                 timer.start(TIMERS.REPORT);
-                //reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
+                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
                 consoleReporter.reportIfNeeded(timer,frameRate);
                 timer.end(TIMERS.REPORT); 
 
