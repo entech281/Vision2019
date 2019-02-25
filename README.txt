@@ -44,4 +44,4 @@ Tricks to increase frame rate
 1) Has a class called Framerate tracker that creates an object that has the capability to return the framerate and the framecount
    a) Use this object to find the code that takes the most time
 2) Typically, resizing the stream tends to help increase frame rate
-3) 
+3) Also note that by using the process acknowledged in step 1, we realized the code created by FIRST was time consuming, so we got rid of it and manually wrote the portions we wanted (These portions will have a "MANUAL REPLACEMENT INSTEAD OF FIRST CODE" comment above and below them to allow you to identify them
