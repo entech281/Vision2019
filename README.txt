@@ -27,3 +27,21 @@ Building
 3) On the Pi, run "./runInteractive" in /home/pi or
    "sudo svc -t /service/camera" to restart service.
 
+=================
+How it works
+=================
+
+1) Has a generated GRIP pipeline to filter and find specific contours
+2) Takes the contours and runs algorithms specified in the filters folder code that eliminate random rectangles
+3) Uses the average area of the rotated rectangles to calculate the distance to the target
+4) Uses the average distance to the center of the frame of the rotated rectangle to determine how off centered the robot is
+5) Updates the network tables with data calculated to be used elsewhere
+
+=================
+Tricks to increase frame rate
+=================
+
+1) Has a class called Framerate tracker that creates an object that has the capability to return the framerate and the framecount
+   a) Use this object to find the code that takes the most time
+2) Typically, resizing the stream tends to help increase frame rate
+3) 
