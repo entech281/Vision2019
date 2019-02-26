@@ -15,7 +15,8 @@ import org.opencv.core.RotatedRect;
 public class GibberishRectangleFilter implements RectangleFilter{
 
     public static double MIN_DIMENSION = 2;
-    public static double ASPECT_RATIO = 2;    
+    public static double MIN_ASPECT_RATIO = 1.5;
+    public static double MAX_ASPECT_RATIO = 3;    
     /*
     
     CAREFUL! the angles are twisting the rectangles sideways, so basically
@@ -39,7 +40,8 @@ public class GibberishRectangleFilter implements RectangleFilter{
         var filteredFromSmall = new ArrayList<RotatedRect>();
         for (RotatedRect rect : toFilter) {
             if ( valuesLargerThan(MIN_DIMENSION,rect.size.height, rect.size.width) &&
-                 isRatioLargerThan(rect.size.height, rect.size.width, ASPECT_RATIO)){
+                 isRatioLargerThan(rect.size.height, rect.size.width, MIN_ASPECT_RATIO) && 
+                 isRatioSmallerThan(rect.size.height, rect.size.width, MAX_ASPECT_RATIO)){
                 filteredFromSmall.add(rect);
             }
         }
@@ -58,6 +60,12 @@ public class GibberishRectangleFilter implements RectangleFilter{
         double ar = val1 / val2;
         double invAR = 1.0/ar;
         return (ar > aspectRatio) || ((ar) < (1.0/aspectRatio)) ;
+
+    }
+    public static boolean isRatioSmallerThan(double val1, double val2, double aspectRatio){
+        double ar = val1 / val2;
+        double invAR = 1.0/ar;
+        return (ar < aspectRatio) || ((ar) > (1.0/aspectRatio)) ;
 
     }
 }
