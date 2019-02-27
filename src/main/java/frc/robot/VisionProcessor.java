@@ -41,6 +41,7 @@ public class VisionProcessor implements VisionPipeline {
         Scalar GREEN = new Scalar(0, 255, 0);
         Scalar RED = new Scalar(0, 0, 255);
         Scalar YELLOW = new Scalar(0, 165, 255);
+        Scalar PURPLE = new Scalar(211, 0, 148);
     }
     public static double LATERAL_DISTANCE_FACTOR = 1.0;
     public static double PERPENDICULAR_DISTANCE_FACTOR = 0.6178;
@@ -105,7 +106,7 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter, int sizeSelected){
-        distanceFromTarget = 430*Math.pow(area/2, -0.494);
+        distanceFromTarget = 430*Math.pow(area/2, -0.494) - CameraConstants.DISTANCE_BETWEEN_CAMERA_AND_FRONT;
         pixelPerInch = 183.3526/distanceFromTarget;
         if(sizeSelected == 1){
             computeDistanceIfOnlyOneRectangle(pixelPerInch, averageDistanceToCenter);
@@ -127,37 +128,16 @@ public class VisionProcessor implements VisionPipeline {
         parent.process(resizedImage);
         timer.end(TIMERS.GRIP);
 
+        
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
+        ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
         ArrayList<RotatedRect> selected = new DumbAndAloneRectangleFilter().filter(ok);
 
-        Mat rvec = CameraConstants.getRvec();
-        Mat tvec = CameraConstants.getTvec();
-        if(SWITCH_ONE_RECTANGLE_IS_SUFFICIENT){
-            if (selected.size() == 2 || selected.size() == 1) {
-                foundTarget = true;
-                timer.start(TIMERS.PNP);
-                /*Calib3d.solvePnP(CameraConstants.getObjectPoints(),
-                    CameraConstants.getImgPoint(selected),
-                    CameraConstants.getCameraMatrix(),
-                    CameraConstants.getDistCoeffs(), rvec, tvec, true);*/
-                timer.end(TIMERS.PNP);
-            }
-        }
-        else{
-            if (selected.size() == 2) {
-                foundTarget = true;
-                timer.start(TIMERS.PNP);
-                /*Calib3d.solvePnP(CameraConstants.getObjectPoints(),
-                    CameraConstants.getImgPoint(selected),
-                    CameraConstants.getCameraMatrix(),
-                    CameraConstants.getDistCoeffs(), rvec, tvec, true);*/
-                timer.end(TIMERS.PNP);
-            } 
-        }
 
         timer.start(TIMERS.OUTPUT);
         drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE);
+        drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE);
         drawRectanglesOnImage(resizedImage, ok, COLORS.RED);
         drawRectanglesOnImage(resizedImage, selected, COLORS.YELLOW);
         computeArea(selected);

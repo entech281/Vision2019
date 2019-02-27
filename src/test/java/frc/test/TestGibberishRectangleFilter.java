@@ -8,18 +8,20 @@ public class TestGibberishRectangleFilter{
 
     @Test
     public void testIsRatioLargerThan(){
-        double RECTANGLE_HEIGHT = 10.0;
-        double RECTANGLE_WIDTH = 4.0;
-        boolean isRatioLarge1;
-        boolean isRatioLarge2;
-        boolean isRatioLarge3;
+        double ar1 = 3;
+        double ar2 = 1;
+        double ar3 = 0.333;
+        boolean isRatio1;
+        boolean isRatio2;
+        boolean isRatio3;
 
-        isRatioLarge1=GibberishRectangleFilter.isRatioLargerThan(RECTANGLE_WIDTH, RECTANGLE_HEIGHT, 2);
-        isRatioLarge2=GibberishRectangleFilter.isRatioLargerThan(RECTANGLE_HEIGHT, RECTANGLE_WIDTH, 2);
-        isRatioLarge3=GibberishRectangleFilter.isRatioLargerThan(RECTANGLE_HEIGHT, RECTANGLE_HEIGHT, 2);
+        isRatio1 = GibberishRectangleFilter.getAspectRatioConditionMet(ar1);
+        isRatio2 = GibberishRectangleFilter.getAspectRatioConditionMet(ar2);
+        isRatio3 = GibberishRectangleFilter.getAspectRatioConditionMet(ar3);
 
-        Assert.assertEquals(true, isRatioLarge1);
-        Assert.assertEquals(true, isRatioLarge2);
-        Assert.assertEquals(false, isRatioLarge3);
+        Assert.assertEquals(true, isRatio1);
+        Assert.assertEquals(false, isRatio2);
+        Assert.assertEquals(true, isRatio3);
+
     }
 }
