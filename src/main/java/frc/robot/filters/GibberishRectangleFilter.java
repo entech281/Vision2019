@@ -16,7 +16,7 @@ public class GibberishRectangleFilter implements RectangleFilter{
 
     public static double MIN_DIMENSION = 2;
     public static double MIN_ASPECT_RATIO = 1.5;
-    public static double MAX_ASPECT_RATIO = 3;    
+    public static double MAX_ASPECT_RATIO = 8;    
     /*
     
     CAREFUL! the angles are twisting the rectangles sideways, so basically
@@ -37,11 +37,15 @@ public class GibberishRectangleFilter implements RectangleFilter{
     @Override
     public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter) {
 
+        double ar;
         var filteredFromSmall = new ArrayList<RotatedRect>();
+        boolean aspectRatioConditionsMet = false;
         for (RotatedRect rect : toFilter) {
+            ar = rect.size.height/rect.size.width;
+            getAspectRatioConditionMet(ar);
+
             if ( valuesLargerThan(MIN_DIMENSION,rect.size.height, rect.size.width) &&
-                 isRatioLargerThan(rect.size.height, rect.size.width, MIN_ASPECT_RATIO) && 
-                 isRatioSmallerThan(rect.size.height, rect.size.width, MAX_ASPECT_RATIO)){
+                 aspectRatioConditionsMet){
                 filteredFromSmall.add(rect);
             }
         }
@@ -56,16 +60,24 @@ public class GibberishRectangleFilter implements RectangleFilter{
         }
         return true;
     }
-    public static boolean isRatioLargerThan(double val1, double val2, double aspectRatio){
-        double ar = val1 / val2;
-        double invAR = 1.0/ar;
-        return (ar > aspectRatio) || ((ar) < (1.0/aspectRatio)) ;
+    public static boolean isRatioConditionMetWhenAspectLessThanOne(double ar, double minAspectRatio, double maxAspectRatio){
+        return (ar > 1/maxAspectRatio && ar<1/minAspectRatio);
 
     }
-    public static boolean isRatioSmallerThan(double val1, double val2, double aspectRatio){
-        double ar = val1 / val2;
-        double invAR = 1.0/ar;
-        return (ar < aspectRatio) || ((ar) > (1.0/aspectRatio)) ;
 
+    public static boolean isRatioConditionMetWhenAspectLargerThanOne(double ar, double minAspectRatio, double maxAspectRatio){
+        return (ar<maxAspectRatio && ar>minAspectRatio);
     }
+
+    public static boolean getAspectRatioConditionMet(double ar){
+        boolean aspectRatioConditionMet;
+        if(ar<1){
+            aspectRatioConditionMet = isRatioConditionMetWhenAspectLessThanOne(ar, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+        }
+        else{
+            aspectRatioConditionMet = isRatioConditionMetWhenAspectLargerThanOne(ar, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+        }
+        return aspectRatioConditionMet;
+    }
+
 }
