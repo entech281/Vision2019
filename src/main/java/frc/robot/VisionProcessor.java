@@ -69,8 +69,8 @@ public class VisionProcessor implements VisionPipeline {
         int startRow = CameraConstants.RECOGNIZE_TOP;
         int endRow = CameraConstants.RECOGNIZE_BOTTOM;
 
-        Point topLeft = new Point(0, startRow);
-        Point bottomRight = new Point(CameraConstants.PROCESS_WIDTH, endRow);
+        Point topLeft = new Point(25, startRow);
+        Point bottomRight = new Point(CameraConstants.PROCESS_WIDTH - 25, endRow);
         Rect rectCrop = new Rect(topLeft, bottomRight);
 
         return new Mat(input, rectCrop);
@@ -90,7 +90,7 @@ public class VisionProcessor implements VisionPipeline {
         double distanceToCenter = 0.0;
         double netDistanceToCenter=0.0;
         for(RotatedRect rect : input){
-            distanceToCenter = rect.center.x - CameraConstants.PROCESS_WIDTH/2;
+            distanceToCenter = rect.center.x - (CameraConstants.PROCESS_WIDTH-50)/2;
             netDistanceToCenter = netDistanceToCenter + distanceToCenter;
         }
         averageDistanceToCenter = netDistanceToCenter/input.size();
