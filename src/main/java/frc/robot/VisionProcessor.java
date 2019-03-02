@@ -46,12 +46,14 @@ public class VisionProcessor implements VisionPipeline {
     public static double LATERAL_DISTANCE_FACTOR = 1.0;
     public static double PERPENDICULAR_DISTANCE_FACTOR = 0.6178;
     public static int CONSOLE_REPORTING_INTERVAL_MILLIS = 1000;
-    public static final boolean SWITCH_ONE_RECTANGLE_IS_SUFFICIENT = true;
+    public static double UNKNOWN = 99999;
+    public static final boolean SWITCH_ONE_RECTANGLE_IS_SUFFICIENT = false;
     private GripPipeline parent;
     private double averageArea = 0.0;
     private double averageDistanceToCenter = 0.0;
     private double distanceFromTarget= 0.0;
     private double lateralDistance = 0.0;
+    private int sizeSelected = 0;
     private double pixelPerInch = 0.0;
     private Mat lastFrame = null;
     public boolean foundTarget = false;
@@ -134,6 +136,7 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
         ArrayList<RotatedRect> selected = new DumbAndAloneRectangleFilter().filter(ok);
+        sizeSelected = selected.size();
 
 
         timer.start(TIMERS.OUTPUT);
@@ -176,8 +179,12 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public double getLateralDistance() {
-        
+        if(sizeSelected == 2){
         return lateralDistance;
+        }
+        else{
+            return UNKNOWN;
+        }
     }
 
     public void drawRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color) {

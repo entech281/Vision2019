@@ -66,7 +66,7 @@ public final class Main {
 
         TimeTracker timer = new TimeTracker();
         timer.setEnabled(true);
-        MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 8081);
+        MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 1183);
         CvSource cvsource = new CvSource("processed",
                 VideoMode.PixelFormat.kMJPEG,
                 CameraConstants.PROCESS_WIDTH,

@@ -64,9 +64,10 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
                     RotatedRect minRect = filtered.get(indexMax);
                     double distanceToCenter1 = Math.abs(CameraConstants.PROCESS_WIDTH / 2 - rect1.center.x);
                     double distanceToCenterMin = Math.abs(CameraConstants.PROCESS_WIDTH / 2 - minRect.center.x);
-                    if (distanceToCenter1 < distanceToCenterMin) {
-                        indexMax = n;
-                    }
+                        if (distanceToCenter1 < distanceToCenterMin) {
+                            indexMax = n;
+                        }
+                    
                     n = n + 1;
                 }
 
