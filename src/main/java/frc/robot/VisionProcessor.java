@@ -77,6 +77,7 @@ public class VisionProcessor implements VisionPipeline {
         Rect rectCrop = new Rect(topLeft, bottomRight);
 
         return new Mat(input, rectCrop);
+
     }
 
     public void computeArea(ArrayList<RotatedRect> input) {
@@ -148,7 +149,6 @@ public class VisionProcessor implements VisionPipeline {
         computeAverageDistanceToCenter(selected);
         computeAndSetDistanceFromTargets(averageArea, averageDistanceToCenter, selected.size());
         putOutputTextOnFrame(resizedImage);
-        //putSelectedTargetsOnFrame(resizedImage, selected, rvec, tvec);
 
         timer.end(TIMERS.OUTPUT);
         timer.start(TIMERS.REPORT);

@@ -13,13 +13,13 @@ import org.opencv.core.*;
 
 public class CameraConstants {
 
-    public static int PROCESS_WIDTH=320;
-    public static int PROCESS_HEIGHT=240;
-    public static int RECOGNIZE_WIDTH=320;
+    public static int PROCESS_WIDTH=240;
+    public static int PROCESS_HEIGHT=160;
+    public static int RECOGNIZE_WIDTH=240;
     //public static int RECOGNIZE_TOP=150;
     //public static int RECOGNIZE_BOTTOM=280;
-    public static int RECOGNIZE_TOP=110;
-    public static int RECOGNIZE_BOTTOM=240;
+    public static int RECOGNIZE_TOP=40;
+    public static int RECOGNIZE_BOTTOM=150;
     public static double DISTANCE_BETWEEN_CAMERA_AND_FRONT= 8.8;
     
     public static MatOfPoint3f getObjectPoints() {

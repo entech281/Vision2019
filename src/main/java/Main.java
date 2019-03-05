@@ -21,6 +21,7 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import frc.robot.CameraConstants;
+import frc.robot.FrameReader;
 import frc.robot.ImageResizer;
 import frc.robot.GripPipeline;
 import frc.robot.VisionProcessor;
@@ -70,7 +71,7 @@ public final class Main {
         CvSource cvsource = new CvSource("processed",
                 VideoMode.PixelFormat.kMJPEG,
                 CameraConstants.PROCESS_WIDTH,
-                CameraConstants.PROCESS_HEIGHT, 30);
+                CameraConstants.PROCESS_HEIGHT, 5);
 
  
         UsbCamera source = new UsbCamera("PiCamera", "/dev/video0");
@@ -88,47 +89,55 @@ public final class Main {
         sink.setSource(source);
         sink.setEnabled(true);
         
-        Mat inputFrame = new Mat();
+        //Mat inputFrame = new Mat();
         ImageResizer cameraResizer = new ImageResizer();
+        
+        FrameReader frameReader  = new FrameReader(cameraResizer,sink,timer);
+        frameReader.setDaemon(true);
+        frameReader.start();
+        
         while (true) {
-            timer.start(TIMERS.FRAME);
+            
             try {
-                timer.start(TIMERS.GRAB);
-                sink.grabFrame(inputFrame);
-                timer.end(TIMERS.GRAB);
-                
-                //do not process empty images
-                if (inputFrame.size().height <= 0 || inputFrame.size().width <= 0) {
-                    continue;
+//                timer.start(TIMERS.GRAB);
+//                sink.grabFrame(inputFrame);
+//                timer.end(TIMERS.GRAB);
+//                
+//                //do not process empty images
+//                if (inputFrame.size().height <= 0 || inputFrame.size().width <= 0) {
+//                    continue;
+//                }
+//
+//                timer.start(TIMERS.RESIZE);
+//                Mat currentFrame = cameraResizer.resizeImage(inputFrame,
+//                        new Size(
+//                                CameraConstants.PROCESS_WIDTH,
+//                                CameraConstants.PROCESS_HEIGHT)
+//                );
+//                timer.end(TIMERS.RESIZE);
+                if ( frameReader.hasNewFrame()){
+                    timer.start(TIMERS.FRAME);
+                    processor.process(frameReader.getCurrentFrame());
+                    timer.end(TIMERS.PROCESS);
+
+                    timer.start(TIMERS.PUT);
+                    cvsource.putFrame(processor.getLastFrame());
+                    timer.end(TIMERS.PUT);
+
+                    timer.start(TIMERS.REPORT);
+                    reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
+                    consoleReporter.reportIfNeeded(timer,frameRate);
+                    timer.end(TIMERS.REPORT);   
+                    frameRate.frame();
+                    timer.end(TIMERS.FRAME);
                 }
-
-                timer.start(TIMERS.RESIZE);
-                Mat resized = cameraResizer.resizeImage(inputFrame,
-                        new Size(
-                                CameraConstants.PROCESS_WIDTH,
-                                CameraConstants.PROCESS_HEIGHT)
-                );
-                timer.end(TIMERS.RESIZE);
-
-
-                timer.start(TIMERS.PROCESS);
-                processor.process(resized);
-                timer.end(TIMERS.PROCESS);
-                
-                timer.start(TIMERS.PUT);
-                cvsource.putFrame(processor.getLastFrame());
-                timer.end(TIMERS.PUT);
-                
-                timer.start(TIMERS.REPORT);
-                reporter.reportDistance(processor.getDistanceFromTarget(), processor.getLateralDistance(), frameRate.getTicks(), processor.getFoundTarget());
-                consoleReporter.reportIfNeeded(timer,frameRate);
-                timer.end(TIMERS.REPORT); 
+          
 
             } catch (Exception ex) {
                 ex.printStackTrace(System.out);
             }
-            timer.end(TIMERS.FRAME);
-            frameRate.frame();
+           
+            
         }
     }
 
