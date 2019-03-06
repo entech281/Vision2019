@@ -152,6 +152,10 @@ public class VisionProcessor implements VisionPipeline {
         if(reporter.getTargetAlignButtonPressed() == false || prevNumRects != numRects || frames.getTicks()<10){
             index = new CenterRectangleIndexFinder().getIndex(ok);
             prevNumRects = numRects;
+            targetLock = false;
+        }
+        else{
+            targetLock =true;
         }        
         ArrayList<RotatedRect> selected = new FinalVisionTargetFilter().filter(ok, index);
 
