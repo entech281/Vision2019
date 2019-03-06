@@ -7,9 +7,13 @@ package frc.robot.filters;
 
 import frc.robot.CameraConstants;
 import frc.robot.RotatedRectangleComparator;
+import frc.robot.VisionReporter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import org.opencv.core.RotatedRect;
+
+import edu.wpi.first.vision.VisionPipeline;
 
 /**
  *
@@ -17,11 +21,21 @@ import org.opencv.core.RotatedRect;
  */
 public class DumbAndAloneRectangleFilter implements RectangleFilter{
 
+    int counter = 0;
+    int numRectsPrev = 0;
+    int numRects = 0;
+    boolean targetLockInitiated = false;
+
+    VisionReporter reporter = new VisionReporter();
     @Override
     public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter) {
        //this gets rid of rectangles in the top of the image, which are usually lights
+        counter += 1;
+        if(counter == 1){
+            numRectsPrev = toFilter.size();
+        }
+        numRects = toFilter.size();
 
-        
         Collections.sort(toFilter, new RotatedRectangleComparator());
         int i = 0;
         int len = toFilter.size();
@@ -55,22 +69,28 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
             }
 
             //System.out.println("filtered"+ filtered.size());
-            int n = 1;
-            int lenFiltered = filtered.size();
-            int indexMax = 0;
-            if (lenFiltered > 1) {
-                while (n < (lenFiltered - 1)) {
-                    RotatedRect rect1 = filtered.get(n);
-                    RotatedRect minRect = filtered.get(indexMax);
-                    double distanceToCenter1 = Math.abs(CameraConstants.PROCESS_WIDTH / 2 - rect1.center.x);
-                    double distanceToCenterMin = Math.abs(CameraConstants.PROCESS_WIDTH / 2 - minRect.center.x);
-                        if (distanceToCenter1 < distanceToCenterMin) {
-                            indexMax = n;
-                        }
+            if(numRects == numRectsPrev && reporter.getTargetAlignButtonPressed() && counter > 1){
+                numRectsPrev = numRects;
+                targetLockInitiated = true;
+            }
+            else{
+                int n = 1;
+                int lenFiltered = filtered.size();
+                int indexMax = 0;
+                if (lenFiltered > 1) {
+                    while (n < (lenFiltered - 1)) {
+                        RotatedRect rect1 = filtered.get(n);
+                        RotatedRect minRect = filtered.get(indexMax);
+                        double distanceToCenter1 = Math.abs(CameraConstants.PROCESS_WIDTH / 2 - rect1.center.x);
+                        double distanceToCenterMin = Math.abs(CameraConstants.PROCESS_WIDTH / 2 - minRect.center.x);
+                            if (distanceToCenter1 < distanceToCenterMin) {
+                                indexMax = n;
+                            }
                     
-                    n = n + 1;
+                        n = n + 1;
+                    }
+                targetLockInitiated = false;
                 }
-
                 if (indexMax == 0) {
                     filteredFinal.add(filtered.get(indexMax));
                     filteredFinal.add(filtered.get(indexMax + 1));
@@ -86,5 +106,9 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
             //System.out.println("filtered_final"+filteredFinal.size());
             return filteredFinal;
         }
+    
+    public boolean getTargetLockInitiated(){
+        return targetLockInitiated;
+    }
     
 }

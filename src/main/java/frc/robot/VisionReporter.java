@@ -7,6 +7,7 @@ package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import frc.robot.TargetLockChecker;
 
 /**
  *
@@ -20,10 +21,19 @@ public class VisionReporter {
     private final NetworkTableEntry frameCount = ntist.getEntry("team281.frameCount");
     private final NetworkTableEntry foundTarget = ntist.getEntry("team281.Vision.foundTarget");
 
+    private final NetworkTableEntry targetLock = ntist.getEntry("team281.targetLock.buttonPressed");
+    boolean targetAlignButtonPressed = false;
+
     public void reportDistance(double distanceToTarget, double lateralDistance, long count, boolean foundTargetBoolean) {
         distance.forceSetDouble(distanceToTarget);
         lateral.forceSetDouble(lateralDistance);
         frameCount.forceSetDouble(count);
         foundTarget.forceSetBoolean(foundTargetBoolean);
+    }
+
+    public boolean getTargetAlignButtonPressed(){
+        boolean targetManual = new TargetLockChecker().isTargetLockOn();
+        targetAlignButtonPressed = (targetLock.getBoolean(false) || targetManual);
+            return targetAlignButtonPressed;
     }
 }
