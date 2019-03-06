@@ -19,22 +19,11 @@ import edu.wpi.first.vision.VisionPipeline;
  *
  * @author dcowden
  */
-public class DumbAndAloneRectangleFilter implements RectangleFilter{
+public class CenterRectangleIndexFinder{
 
-    int counter = 0;
-    int numRectsPrev = 0;
-    int numRects = 0;
-    boolean targetLockInitiated = false;
+    int returnIndex = 0;
 
-    VisionReporter reporter = new VisionReporter();
-    @Override
-    public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter) {
-       //this gets rid of rectangles in the top of the image, which are usually lights
-        counter += 1;
-        if(counter == 1){
-            numRectsPrev = toFilter.size();
-        }
-        numRects = toFilter.size();
+    public int getIndex(ArrayList<RotatedRect> toFilter) {
 
         Collections.sort(toFilter, new RotatedRectangleComparator());
         int i = 0;
@@ -68,12 +57,6 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
                 }
             }
 
-            //System.out.println("filtered"+ filtered.size());
-            if(numRects == numRectsPrev && reporter.getTargetAlignButtonPressed() && counter > 1){
-                numRectsPrev = numRects;
-                targetLockInitiated = true;
-            }
-            else{
                 int n = 1;
                 int lenFiltered = filtered.size();
                 int indexMax = 0;
@@ -89,26 +72,16 @@ public class DumbAndAloneRectangleFilter implements RectangleFilter{
                     
                         n = n + 1;
                     }
-                targetLockInitiated = false;
                 }
-                if (indexMax == 0) {
-                    filteredFinal.add(filtered.get(indexMax));
-                    filteredFinal.add(filtered.get(indexMax + 1));
-                } else if (indexMax % 2 == 0) {
-                    filteredFinal.add(filtered.get(indexMax));
-                    filteredFinal.add(filtered.get(indexMax + 1));
-                } else {
-                    filteredFinal.add(filtered.get(indexMax - 1));
-                    filteredFinal.add(filtered.get(indexMax));
-                }
+            if(indexMax % 2 == 0 || indexMax == 0){
+                returnIndex = indexMax;
             }
+            else{
+                returnIndex = indexMax-1;
+            }   
         }
-            //System.out.println("filtered_final"+filteredFinal.size());
-            return filteredFinal;
-        }
-    
-    public boolean getTargetLockInitiated(){
-        return targetLockInitiated;
+        return returnIndex;
     }
+
     
 }

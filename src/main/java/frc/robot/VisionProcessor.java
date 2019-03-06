@@ -1,8 +1,10 @@
 package frc.robot;
 
 import edu.wpi.first.vision.VisionPipeline;
-import frc.robot.filters.DumbAndAloneRectangleFilter;
+import frc.robot.filters.CenterRectangleIndexFinder;
+import frc.robot.filters.FinalVisionTargetFilter;
 import frc.robot.filters.GibberishRectangleFilter;
+import frc.timers.FramerateTracker;
 import frc.timers.PeriodicReporter;
 import frc.timers.TimeTracker;
 import java.util.ArrayList;
@@ -54,20 +56,26 @@ public class VisionProcessor implements VisionPipeline {
     private double distanceFromTarget= 0.0;
     private double lateralDistance = 0.0;
     private int sizeSelected = 0;
-    private int previousSizeSelected = 0;
     private double pixelPerInch = 0.0;
     private Mat lastFrame = null;
     public boolean foundTarget = false;
-    private boolean returnLateral = false;
+
+    private int index = 0;
     private boolean targetLock = false;
+    private int prevNumRects = 0;
+    private int numRects = 0;
 
     private final PeriodicReporter periodicReporter
             = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
     private final TimeTracker timer;
+    private final VisionReporter reporter;
+    private final FramerateTracker frames;
 
-    public VisionProcessor(GripPipeline parent, TimeTracker timer) {
+    public VisionProcessor(GripPipeline parent, TimeTracker timer, VisionReporter reporter, FramerateTracker frames) {
         this.parent = parent;
         this.timer = timer;
+        this.reporter = reporter;
+        this.frames = frames;
     }
 
     private Mat cropImage(Mat input) {
@@ -137,14 +145,20 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
-        ArrayList<RotatedRect> selected = new DumbAndAloneRectangleFilter().filter(ok);
+        numRects = ok.size();
 
+        //reporter.getTargetAlignButtonPressed() == false || prevNumRects != numRects || frames.getTicks()<10 
+        //is the target lock logic, if all of these are false than target lock is initiated
+        if(reporter.getTargetAlignButtonPressed() == false || prevNumRects != numRects || frames.getTicks()<10){
+            index = new CenterRectangleIndexFinder().getIndex(ok);
+            prevNumRects = numRects;
+        }        
+        ArrayList<RotatedRect> selected = new FinalVisionTargetFilter().filter(ok, index);
 
         timer.start(TIMERS.OUTPUT);
         drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE);
         drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE);
         drawRectanglesOnImage(resizedImage, ok, COLORS.RED);
-        targetLock = new DumbAndAloneRectangleFilter().getTargetLockInitiated();
         if(targetLock){
             drawTargetLockRectanglesOnImage(resizedImage, selected, COLORS.BLUE);
         }

@@ -10,10 +10,10 @@ import org.opencv.core.Size;
 
 import frc.robot.ConvertRectToPoint;
 import frc.robot.VisionProcessor;
-import frc.robot.filters.DumbAndAloneRectangleFilter;
+import frc.robot.filters.CenterRectangleIndexFinder;
 
 
-public class TestRectangleSort {
+public class TestCenterIndexFinder {
     @Test
     public void Case1Perfect(){
 
@@ -30,10 +30,10 @@ public class TestRectangleSort {
         rotatedRects.add(rect2);
         rotatedRects.add(rect1);
 
-        var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
+        int index = 0;
+        index =new CenterRectangleIndexFinder().getIndex(rotatedRects);
         
-        System.out.println(RotatedRectFinal.toString());
+        System.out.println(index);
     } 
 
     @Test
@@ -52,10 +52,10 @@ public class TestRectangleSort {
         RotatedRects.add(rect2);
         RotatedRects.add(rect1);
 
-        var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(RotatedRects);
+        int index = 0;
+        index =new CenterRectangleIndexFinder().getIndex(RotatedRects);
         
-        System.out.println(RotatedRectFinal.toString());
+        System.out.println(index);
     } 
 
     @Test
@@ -79,10 +79,10 @@ public class TestRectangleSort {
         rotatedRects.add(rect1);
         rotatedRects.add(rect3);
 
-        var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
+        int index = 0;
+        index =new CenterRectangleIndexFinder().getIndex(rotatedRects);
         
-        System.out.println(RotatedRectFinal.toString());
+        System.out.println(index);
     } 
 
     @Test
@@ -106,11 +106,10 @@ public class TestRectangleSort {
         rotatedRects.add(rect1);
         rotatedRects.add(rect3);
 
-        var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
+        int index = 0;
+        index =new CenterRectangleIndexFinder().getIndex(rotatedRects);
         
-        System.out.println(RotatedRectFinal.toString());
-        //Expected Output (140,200) (200,200)
+        System.out.println(index);
     } 
     @Test
     public void Case4Five(){
@@ -143,9 +142,9 @@ public class TestRectangleSort {
         rotatedRects.add(rect5);
         rotatedRects.add(rect3);
 
-        var RotatedRectFinal = new ArrayList<RotatedRect>();
-        RotatedRectFinal =new DumbAndAloneRectangleFilter().filter(rotatedRects);
+        int index = 0;
+        index =new CenterRectangleIndexFinder().getIndex(rotatedRects);
         
-        System.out.println(RotatedRectFinal.toString());
+        System.out.println(index);
     } 
 } 

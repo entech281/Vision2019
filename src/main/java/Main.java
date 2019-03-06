@@ -81,9 +81,10 @@ public final class Main {
         rawVideoServer.setSource(cvsource);
 
         VisionReporter reporter = new VisionReporter();
+        FramerateTracker frames = new FramerateTracker();
         PeriodicReporter consoleReporter = new PeriodicReporter(2000);
         FramerateTracker frameRate = new FramerateTracker();
-        VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer);
+        VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer, reporter, frames);
         
         CvSink sink = new CvSink("From Camera");
         sink.setSource(source);

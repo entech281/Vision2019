@@ -13,5 +13,5 @@ import org.opencv.core.RotatedRect;
  * @author dcowden
  */
 public interface RectangleFilter {
-    public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter);
+    public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter, int index);
 }

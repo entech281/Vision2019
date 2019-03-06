@@ -12,7 +12,7 @@ import org.opencv.core.RotatedRect;
  *
  * @author dcowden
  */
-public class GibberishRectangleFilter implements RectangleFilter{
+public class GibberishRectangleFilter{
 
     public static double MIN_DIMENSION = 2;
     public static double MIN_ASPECT_RATIO = 2.25;
@@ -34,9 +34,8 @@ public class GibberishRectangleFilter implements RectangleFilter{
 
     
     */
-    @Override
-    public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter) {
 
+    public ArrayList<RotatedRect> filter(ArrayList<RotatedRect> toFilter)  {
         double ar;
         var filteredFromSmall = new ArrayList<RotatedRect>();
         boolean aspectRatioConditionsMet = false;
