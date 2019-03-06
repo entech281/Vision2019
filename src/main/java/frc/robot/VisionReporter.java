@@ -34,6 +34,6 @@ public class VisionReporter {
     public boolean getTargetAlignButtonPressed(){
         boolean targetManual = new TargetLockChecker().isTargetLockOn();
         targetAlignButtonPressed = (targetLock.getBoolean(false) || targetManual);
-            return targetAlignButtonPressed;
+        return targetAlignButtonPressed;
     }
 }
