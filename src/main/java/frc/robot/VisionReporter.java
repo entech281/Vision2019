@@ -21,7 +21,7 @@ public class VisionReporter {
     private final NetworkTableEntry frameCount = ntist.getEntry("team281.frameCount");
     private final NetworkTableEntry foundTarget = ntist.getEntry("team281.Vision.foundTarget");
 
-    private final NetworkTableEntry targetLock = ntist.getEntry("team281.targetLock.buttonPressed");
+
     boolean targetAlignButtonPressed = false;
 
     public void reportDistance(double distanceToTarget, double lateralDistance, long count, boolean foundTargetBoolean) {
@@ -31,9 +31,5 @@ public class VisionReporter {
         foundTarget.forceSetBoolean(foundTargetBoolean);
     }
 
-    public boolean getTargetAlignButtonPressed(){
-        boolean targetManual = new TargetLockChecker().isTargetLockOn();
-        targetAlignButtonPressed = (targetLock.getBoolean(false) || targetManual);
-        return targetAlignButtonPressed;
-    }
+    
 }

@@ -100,22 +100,6 @@ public final class Main {
         while (true) {
             
             try {
-//                timer.start(TIMERS.GRAB);
-//                sink.grabFrame(inputFrame);
-//                timer.end(TIMERS.GRAB);
-//                
-//                //do not process empty images
-//                if (inputFrame.size().height <= 0 || inputFrame.size().width <= 0) {
-//                    continue;
-//                }
-//
-//                timer.start(TIMERS.RESIZE);
-//                Mat currentFrame = cameraResizer.resizeImage(inputFrame,
-//                        new Size(
-//                                CameraConstants.PROCESS_WIDTH,
-//                                CameraConstants.PROCESS_HEIGHT)
-//                );
-//                timer.end(TIMERS.RESIZE);
                 if ( frameReader.hasNewFrame()){
                     timer.start(TIMERS.FRAME);
                     processor.process(frameReader.getCurrentFrame());

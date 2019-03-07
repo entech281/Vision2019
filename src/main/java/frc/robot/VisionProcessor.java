@@ -145,30 +145,19 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
-        numRects = ok.size();
+        targetLock = new TargetLockInitiate().InitiateTargetLock(ok, prevNumRects, reporter);
 
-        //reporter.getTargetAlignButtonPressed() == false || prevNumRects != numRects || frames.getTicks()<10 
-        //is the target lock logic, if all of these are false than target lock is initiated
-        if(reporter.getTargetAlignButtonPressed() == false || prevNumRects != numRects || frames.getTicks()<10){
+        if(targetLock != true){
             index = new CenterRectangleIndexFinder().getIndex(ok);
-            prevNumRects = numRects;
-            targetLock = false;
-        }
-        else{
-            targetLock =true;
         }        
         ArrayList<RotatedRect> selected = new FinalVisionTargetFilter().filter(ok, index);
 
         timer.start(TIMERS.OUTPUT);
-        drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE);
-        drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE);
-        drawRectanglesOnImage(resizedImage, ok, COLORS.RED);
-        if(targetLock){
-            drawTargetLockRectanglesOnImage(resizedImage, selected, COLORS.BLUE);
-        }
-        else{
-            drawRectanglesOnImage(resizedImage, selected, COLORS.YELLOW);
-        }
+        drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE, false);
+        drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE, false);
+        drawRectanglesOnImage(resizedImage, ok, COLORS.RED, false);
+        drawRectanglesOnImage(resizedImage, selected, COLORS.BLUE, targetLock);
+        
         computeArea(selected);
         computeAverageDistanceToCenter(selected);
         computeAndSetDistanceFromTargets(averageArea, averageDistanceToCenter, selected.size());
@@ -211,27 +200,23 @@ public class VisionProcessor implements VisionPipeline {
         }
     }
 
-    public void drawRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color) {
+    public void drawRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color, boolean targetLock) {
         Point points[] = new Point[4];
         for (RotatedRect r : rectangles) {
             r.points(points);
             for (int i = 0; i < 4; i++) {
                 Imgproc.line(img, points[i], points[(i + 1) % 4], color, 5);
+            }
+            if(targetLock){
+                targetLockDraw(img, r.center, color);
             }
         }
     }
 
-    public void drawTargetLockRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color) {
-        Point points[] = new Point[4];
-        for (RotatedRect r : rectangles) {
-            r.points(points);
-            for (int i = 0; i < 4; i++) {
-                Imgproc.line(img, points[i], points[(i + 1) % 4], color, 5);
-            }
-            Imgproc.line(img, new Point(r.center.x, r.center.y + 5), new Point(r.center.x, r.center.y - 5), color, 1);
-            Imgproc.line(img, new Point(r.center.x + 5, r.center.y), new Point(r.center.x - 5, r.center.y), color, 1);
-            Imgproc.circle(img, r.center, 3, color);
-        }
+    public void targetLockDraw(Mat img, Point center, Scalar color) {
+            Imgproc.line(img, new Point(center.x, center.y + 5), new Point(center.x, center.y - 5), color, 1);
+            Imgproc.line(img, new Point(center.x + 5, center.y), new Point(center.x - 5, center.y), color, 1);
+            Imgproc.circle(img, center, 3, color);
     }
 
     public void putOutputTextOnFrame(Mat img) {
