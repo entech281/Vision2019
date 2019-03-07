@@ -14,7 +14,7 @@ public class TargetLockInitiate {
 
     private boolean targetLock;
     private boolean targetAlignButtonPressed;
-    public boolean InitiateTargetLock(ArrayList<RotatedRect> toFilter, int prevNumRects, VisionReporter reporter){
+    public boolean InitiateTargetLock(ArrayList<RotatedRect> toFilter, int prevNumRects){
         if(toFilter.size() == prevNumRects && getTargetAlignButtonPressed()){
             targetLock = true;
         }else{

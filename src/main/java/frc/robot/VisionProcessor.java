@@ -145,7 +145,7 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
-        targetLock = new TargetLockInitiate().InitiateTargetLock(ok, prevNumRects, reporter);
+        targetLock = new TargetLockInitiate().InitiateTargetLock(ok, prevNumRects);
 
         if(targetLock != true){
             index = new CenterRectangleIndexFinder().getIndex(ok);
