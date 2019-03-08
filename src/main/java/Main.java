@@ -26,6 +26,10 @@ import frc.robot.ImageResizer;
 import frc.robot.GripPipeline;
 import frc.robot.VisionProcessor;
 import frc.robot.VisionReporter;
+import frc.robot.lock.TargetAlign;
+import frc.robot.lock.TargetLockButtonTracker;
+import frc.robot.lock.TargetLockFileChecker;
+import frc.robot.lock.TargetLockTracker;
 import frc.timers.FramerateTracker;
 import frc.timers.PeriodicReporter;
 import frc.timers.TimeTracker;
@@ -65,6 +69,8 @@ public final class Main {
         ntinst.startClientTeam(TEAM);
         ntinst.startClient();
 
+
+
         TimeTracker timer = new TimeTracker();
         timer.setEnabled(true);
         MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 1183);
@@ -81,10 +87,12 @@ public final class Main {
         rawVideoServer.setSource(cvsource);
 
         VisionReporter reporter = new VisionReporter();
-        FramerateTracker frames = new FramerateTracker();
         PeriodicReporter consoleReporter = new PeriodicReporter(2000);
         FramerateTracker frameRate = new FramerateTracker();
-        VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer, reporter, frames);
+        TargetAlign targetAlign = new TargetLockButtonTracker();
+
+        TargetLockTracker targetLockTracker = new TargetLockTracker(targetAlign);
+        VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer, targetLockTracker);
         
         CvSink sink = new CvSink("From Camera");
         sink.setSource(source);

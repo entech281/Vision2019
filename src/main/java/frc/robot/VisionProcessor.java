@@ -20,6 +20,8 @@ import org.opencv.core.Scalar;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.imgproc.*;
 
+import frc.robot.lock.*;
+
 /**
  * This has a lot of the code that used to be inside of GripPipeline
  *
@@ -68,14 +70,12 @@ public class VisionProcessor implements VisionPipeline {
     private final PeriodicReporter periodicReporter
             = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
     private final TimeTracker timer;
-    private final VisionReporter reporter;
-    private final FramerateTracker frames;
+    private final TargetLockTracker lockTracker;
 
-    public VisionProcessor(GripPipeline parent, TimeTracker timer, VisionReporter reporter, FramerateTracker frames) {
+    public VisionProcessor(GripPipeline parent, TimeTracker timer, TargetLockTracker lockTracker) {
         this.parent = parent;
         this.timer = timer;
-        this.reporter = reporter;
-        this.frames = frames;
+        this.lockTracker = lockTracker;
     }
 
     private Mat cropImage(Mat input) {
@@ -145,10 +145,11 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
-        targetLock = new TargetLockInitiate().InitiateTargetLock(ok, prevNumRects);
-
-        if(targetLock != true){
-            index = new CenterRectangleIndexFinder().getIndex(ok);
+        index = new CenterRectangleIndexFinder().getIndex(ok);
+        if(lockTracker.isTargetLockOn()){
+            lockTracker.checkLock(ok.size());
+        }else{
+            lockTracker.setupLock(ok.size(), index);
         }        
         ArrayList<RotatedRect> selected = new FinalVisionTargetFilter().filter(ok, index);
 
