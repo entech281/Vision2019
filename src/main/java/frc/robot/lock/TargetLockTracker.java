@@ -13,13 +13,18 @@ public class TargetLockTracker{
     private TargetAlign targetAlignInput;
     private int selectedIndex = 0;
     private int expectedRect = 0;
+    private boolean targetLockActive = false;
 
     public boolean isTargetLockOn(){
-        return selectedIndex != 0;
+        return expectedRect > 1;
     }
 
     public int getSelectedIndex(){
         return selectedIndex;
+    }
+
+    public int getExpectRect(){
+        return expectedRect;
     }
 
     public void setupLock(int numRects, int selectedIndex){
@@ -31,10 +36,22 @@ public class TargetLockTracker{
         if(expectedRect != numRects || targetAlignInput.isTargetLockOn() == false){
             resetLock();
         }
+        else{
+            targetLockActive = true;
+        }
     }
     public void resetLock(){
+        targetLockActive = false;
         selectedIndex = 0;
         expectedRect = 0;
+    }
+
+    public boolean targetInput(){
+        return targetAlignInput.isTargetLockOn();
+    }
+
+    public boolean isTargetLockActivated(){
+        return targetLockActive;
     }
 
 }

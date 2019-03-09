@@ -63,9 +63,6 @@ public class VisionProcessor implements VisionPipeline {
     public boolean foundTarget = false;
 
     private int index = 0;
-    private boolean targetLock = false;
-    private int prevNumRects = 0;
-    private int numRects = 0;
 
     private final PeriodicReporter periodicReporter
             = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
@@ -145,19 +142,26 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
-        index = new CenterRectangleIndexFinder().getIndex(ok);
+        ArrayList<RotatedRect> selected = new ArrayList<RotatedRect>();
+
         if(lockTracker.isTargetLockOn()){
             lockTracker.checkLock(ok.size());
+            index = lockTracker.getSelectedIndex();
         }else{
+            index = new CenterRectangleIndexFinder().getIndex(ok);
             lockTracker.setupLock(ok.size(), index);
-        }        
-        ArrayList<RotatedRect> selected = new FinalVisionTargetFilter().filter(ok, index);
-
+        }
+        System.out.println("INDEX INPUT:"+index);
+        System.out.println("Number of Rectangles:"+lockTracker.getExpectRect());
+        System.out.println("Input wheter target lock should be on?" + lockTracker.isTargetLockOn());
+        if(lockTracker.isTargetLockOn()){
+            selected = new FinalVisionTargetFilter().filter(ok, index);
+        }
         timer.start(TIMERS.OUTPUT);
         drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE, false);
         drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE, false);
         drawRectanglesOnImage(resizedImage, ok, COLORS.RED, false);
-        drawRectanglesOnImage(resizedImage, selected, COLORS.BLUE, targetLock);
+        drawRectanglesOnImage(resizedImage, selected, COLORS.GREEN, lockTracker.isTargetLockActivated());
         
         computeArea(selected);
         computeAverageDistanceToCenter(selected);
@@ -209,7 +213,7 @@ public class VisionProcessor implements VisionPipeline {
                 Imgproc.line(img, points[i], points[(i + 1) % 4], color, 5);
             }
             if(targetLock){
-                targetLockDraw(img, r.center, color);
+                targetLockDraw(img, r.center,new Scalar(255, 0, 0));
             }
         }
     }

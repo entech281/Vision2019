@@ -89,11 +89,11 @@ public final class Main {
         VisionReporter reporter = new VisionReporter();
         PeriodicReporter consoleReporter = new PeriodicReporter(2000);
         FramerateTracker frameRate = new FramerateTracker();
-        TargetAlign targetAlign = new TargetLockButtonTracker();
+        TargetAlign targetAlign = new TargetLockFileChecker();
 
         TargetLockTracker targetLockTracker = new TargetLockTracker(targetAlign);
         VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer, targetLockTracker);
-        
+
         CvSink sink = new CvSink("From Camera");
         sink.setSource(source);
         sink.setEnabled(true);

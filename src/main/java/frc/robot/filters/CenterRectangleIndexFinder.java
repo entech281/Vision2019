@@ -41,12 +41,8 @@ public class CenterRectangleIndexFinder{
             while (i < (len - 1)) {
                 RotatedRect rect1 = toFilter.get(i);
                 RotatedRect rect2 = toFilter.get(i + 1);
-                //System.out.println("RECT1: " + rect1.angle);
-                //System.out.println("RECT2: " + rect2.angle);
-
-            if((rect2.angle > -50 && rect2.angle < 0 || rect2.angle == 90)){
-                pairRect = true;
-            }
+                pairRect = (rect2.angle > -50 && rect2.angle < 0 || rect2.angle == 90);
+            
 
                 if (rect1.angle < -70 && rect1.angle > -100 && pairRect) {
                     filtered.add(rect1);

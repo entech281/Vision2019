@@ -86,7 +86,7 @@
                 },
                 {
                     "name": "exposure_time_absolute",
-                    "value": 8
+                    "value": 20
                 },
                 {
                     "name": "exposure_dynamic_framerate",
