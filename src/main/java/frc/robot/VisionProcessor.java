@@ -143,8 +143,7 @@ public class VisionProcessor implements VisionPipeline {
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
         ArrayList<RotatedRect> ok = new GetRidOfAloneRect().getRidofAloneRects(new GibberishRectangleFilter().filter(initial));
     
-        lockTracker.checkLock(ok.size());
-        if(! lockTracker.isTargetLockOn()){
+        if(! lockTracker.isTargetLockOn(ok.size())){
             lockTracker.setupLock(ok.size(),
              new CenterRectangleIndexFinder().getIndex(ok));
         }
@@ -153,10 +152,8 @@ public class VisionProcessor implements VisionPipeline {
 
         System.out.println("INDEX INPUT:"+lockTracker.getSelectedIndex());
         System.out.println("Number of Rectangles:"+lockTracker.getExpectRect());
-        System.out.println("Input wheter target lock should be on?" + lockTracker.isTargetLockOn());
-        System.out.println("Input wheter target lock should be on?" + lockTracker.targetInput());
 
-        if(lockTracker.isTargetLockOn()){
+        if(lockTracker.isTargetLockOn(ok.size())){
             selected = new FinalVisionTargetFilter().filter(ok, lockTracker.getSelectedIndex());
             System.out.println("RECT1:" + selected.get(0).angle + "RECT2:" + selected.get(1).angle);
         }
@@ -164,7 +161,7 @@ public class VisionProcessor implements VisionPipeline {
         drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE, false);
         drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE, false);
         drawRectanglesOnImage(resizedImage, ok, COLORS.RED, false);
-        drawRectanglesOnImage(resizedImage, selected, COLORS.GREEN, lockTracker.isTargetLockOn());
+        drawRectanglesOnImage(resizedImage, selected, COLORS.GREEN, lockTracker.isTargetLockOn(ok.size()));
         
         computeArea(selected);
         computeAverageDistanceToCenter(selected);

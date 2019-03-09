@@ -15,7 +15,10 @@ public class TargetLockTracker{
     private int expectedRect = 0;
     private boolean targetLockActive = false;
 
-    public boolean isTargetLockOn(){
+    public boolean isTargetLockOn(int numRects){
+        if(expectedRect != numRects || targetAlignInput.isTargetLockOn() == false){
+            resetLock();
+        }
         return expectedRect > 1;
     }
 
@@ -30,12 +33,6 @@ public class TargetLockTracker{
     public void setupLock(int numRects, int selectedIndex){
         this.selectedIndex = selectedIndex;
         this.expectedRect = numRects;
-    }
-
-    public void checkLock(int numRects){
-        if(expectedRect != numRects || targetAlignInput.isTargetLockOn() == false){
-            resetLock();
-        }
     }
     public void resetLock(){
         targetLockActive = false;

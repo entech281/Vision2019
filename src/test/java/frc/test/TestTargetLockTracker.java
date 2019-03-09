@@ -20,16 +20,13 @@ public class TestTargetLockTracker{
         targetInput.setTestTargetLock(true);
         int numRects = 4;
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(false, targetLock);
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(false, targetLock);
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(false, targetLock);
     }
 
@@ -46,16 +43,13 @@ public class TestTargetLockTracker{
         targetInput.setTestTargetLock(true);
         int numRects = 3;
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(true, targetLock);
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(true, targetLock);
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(true, targetLock);
 
         targetInput.setTestTargetLock(false);
@@ -74,16 +68,15 @@ public class TestTargetLockTracker{
         targetInput.setTestTargetLock(false);
         int numRects = 3;
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(false, targetLock);
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(false, targetLock);
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(false, targetLock);
 
         targetInput.setTestTargetLock(false);
@@ -102,18 +95,15 @@ public class TestTargetLockTracker{
         targetInput.setTestTargetLock(true);
         int numRects = 6;
 
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(true, targetLock);
 
         lockTracker.setupLock(expectedNumRects, selectedIndex);
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(true, targetLock);
 
         lockTracker.setupLock(expectedNumRects, selectedIndex);
-        lockTracker.checkLock(numRects);
-        targetLock = lockTracker.isTargetLockOn();
+        targetLock = lockTracker.isTargetLockOn(numRects);
         Assert.assertEquals(true, targetLock);
 
         targetInput.setTestTargetLock(false);
