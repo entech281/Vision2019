@@ -36,13 +36,9 @@ public class TargetLockTracker{
         if(expectedRect != numRects || targetAlignInput.isTargetLockOn() == false){
             resetLock();
         }
-        else{
-            targetLockActive = true;
-        }
     }
     public void resetLock(){
         targetLockActive = false;
-        selectedIndex = 0;
         expectedRect = 0;
     }
 

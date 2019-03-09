@@ -29,6 +29,7 @@ import frc.robot.VisionReporter;
 import frc.robot.lock.TargetAlign;
 import frc.robot.lock.TargetLockButtonTracker;
 import frc.robot.lock.TargetLockFileChecker;
+import frc.robot.lock.TargetLockMultipleChecker;
 import frc.robot.lock.TargetLockTracker;
 import frc.timers.FramerateTracker;
 import frc.timers.PeriodicReporter;
@@ -89,9 +90,12 @@ public final class Main {
         VisionReporter reporter = new VisionReporter();
         PeriodicReporter consoleReporter = new PeriodicReporter(2000);
         FramerateTracker frameRate = new FramerateTracker();
-        TargetAlign targetAlign = new TargetLockFileChecker();
 
-        TargetLockTracker targetLockTracker = new TargetLockTracker(targetAlign);
+        TargetAlign button = new TargetLockButtonTracker();
+        TargetAlign file = new TargetLockFileChecker();
+        TargetAlign targetAlign = new TargetLockMultipleChecker(button, file);
+
+        TargetLockTracker targetLockTracker = new TargetLockTracker(button);
         VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer, targetLockTracker);
 
         CvSink sink = new CvSink("From Camera");

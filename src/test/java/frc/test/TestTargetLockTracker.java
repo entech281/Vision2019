@@ -19,7 +19,7 @@ public class TestTargetLockTracker{
 
         targetInput.setTestTargetLock(true);
         int numRects = 4;
-        
+
         lockTracker.checkLock(numRects);
         targetLock = lockTracker.isTargetLockOn();
         Assert.assertEquals(false, targetLock);
@@ -57,6 +57,8 @@ public class TestTargetLockTracker{
         lockTracker.checkLock(numRects);
         targetLock = lockTracker.isTargetLockOn();
         Assert.assertEquals(true, targetLock);
+
+        targetInput.setTestTargetLock(false);
     }
 
     @Test
@@ -83,5 +85,37 @@ public class TestTargetLockTracker{
         lockTracker.checkLock(numRects);
         targetLock = lockTracker.isTargetLockOn();
         Assert.assertEquals(false, targetLock);
+
+        targetInput.setTestTargetLock(false);
+    }
+
+    @Test
+    public void testSimilarToRobotSituation(){
+        TargetLockTest targetInput = new TargetLockTest();
+        TargetLockTracker lockTracker = new TargetLockTracker(targetInput);
+        boolean targetLock;
+
+        int expectedNumRects = 6;
+        int selectedIndex = 2;
+        lockTracker.setupLock(expectedNumRects, selectedIndex);
+
+        targetInput.setTestTargetLock(true);
+        int numRects = 6;
+
+        lockTracker.checkLock(numRects);
+        targetLock = lockTracker.isTargetLockOn();
+        Assert.assertEquals(true, targetLock);
+
+        lockTracker.setupLock(expectedNumRects, selectedIndex);
+        lockTracker.checkLock(numRects);
+        targetLock = lockTracker.isTargetLockOn();
+        Assert.assertEquals(true, targetLock);
+
+        lockTracker.setupLock(expectedNumRects, selectedIndex);
+        lockTracker.checkLock(numRects);
+        targetLock = lockTracker.isTargetLockOn();
+        Assert.assertEquals(true, targetLock);
+
+        targetInput.setTestTargetLock(false);
     }
 }

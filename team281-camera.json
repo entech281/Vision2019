@@ -1,6 +1,6 @@
 
         {
-            "brightness": 70,
+            "brightness": 85,
             "fps": 90,
             "height": 720,
             "width": 1280,
@@ -86,7 +86,7 @@
                 },
                 {
                     "name": "exposure_time_absolute",
-                    "value": 20
+                    "value": 10
                 },
                 {
                     "name": "exposure_dynamic_framerate",

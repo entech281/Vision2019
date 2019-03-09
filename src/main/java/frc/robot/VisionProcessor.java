@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.vision.VisionPipeline;
 import frc.robot.filters.CenterRectangleIndexFinder;
 import frc.robot.filters.FinalVisionTargetFilter;
+import frc.robot.filters.GetRidOfAloneRect;
 import frc.robot.filters.GibberishRectangleFilter;
 import frc.timers.FramerateTracker;
 import frc.timers.PeriodicReporter;
@@ -62,7 +63,6 @@ public class VisionProcessor implements VisionPipeline {
     private Mat lastFrame = null;
     public boolean foundTarget = false;
 
-    private int index = 0;
 
     private final PeriodicReporter periodicReporter
             = new PeriodicReporter(CONSOLE_REPORTING_INTERVAL_MILLIS);
@@ -141,27 +141,30 @@ public class VisionProcessor implements VisionPipeline {
         
         ArrayList<RotatedRect> initial = minimumBoundingRectangle(parent.filterContoursOutput());
         ArrayList<RotatedRect> findContours = minimumBoundingRectangle(parent.findContoursOutput());
-        ArrayList<RotatedRect> ok = new GibberishRectangleFilter().filter(initial);
+        ArrayList<RotatedRect> ok = new GetRidOfAloneRect().getRidofAloneRects(new GibberishRectangleFilter().filter(initial));
+    
+        lockTracker.checkLock(ok.size());
+        if(! lockTracker.isTargetLockOn()){
+            lockTracker.setupLock(ok.size(),
+             new CenterRectangleIndexFinder().getIndex(ok));
+        }
+
         ArrayList<RotatedRect> selected = new ArrayList<RotatedRect>();
 
-        if(lockTracker.isTargetLockOn()){
-            lockTracker.checkLock(ok.size());
-            index = lockTracker.getSelectedIndex();
-        }else{
-            index = new CenterRectangleIndexFinder().getIndex(ok);
-            lockTracker.setupLock(ok.size(), index);
-        }
-        System.out.println("INDEX INPUT:"+index);
+        System.out.println("INDEX INPUT:"+lockTracker.getSelectedIndex());
         System.out.println("Number of Rectangles:"+lockTracker.getExpectRect());
         System.out.println("Input wheter target lock should be on?" + lockTracker.isTargetLockOn());
+        System.out.println("Input wheter target lock should be on?" + lockTracker.targetInput());
+
         if(lockTracker.isTargetLockOn()){
-            selected = new FinalVisionTargetFilter().filter(ok, index);
+            selected = new FinalVisionTargetFilter().filter(ok, lockTracker.getSelectedIndex());
+            System.out.println("RECT1:" + selected.get(0).angle + "RECT2:" + selected.get(1).angle);
         }
         timer.start(TIMERS.OUTPUT);
         drawRectanglesOnImage(resizedImage, initial, COLORS.BLUE, false);
         drawRectanglesOnImage(resizedImage, findContours, COLORS.PURPLE, false);
         drawRectanglesOnImage(resizedImage, ok, COLORS.RED, false);
-        drawRectanglesOnImage(resizedImage, selected, COLORS.GREEN, lockTracker.isTargetLockActivated());
+        drawRectanglesOnImage(resizedImage, selected, COLORS.GREEN, lockTracker.isTargetLockOn());
         
         computeArea(selected);
         computeAverageDistanceToCenter(selected);
