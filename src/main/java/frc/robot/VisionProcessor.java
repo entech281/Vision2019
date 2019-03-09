@@ -117,8 +117,8 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public void computeAndSetDistanceFromTargets(double area, double averageDistanceToCenter, int sizeSelected){
-        distanceFromTarget = 430*Math.pow(area/2, -0.494) - CameraConstants.DISTANCE_BETWEEN_CAMERA_AND_FRONT;
-        pixelPerInch = 183.3526/distanceFromTarget;
+        distanceFromTarget = 1014*Math.pow(area, -0.529) - CameraConstants.DISTANCE_BETWEEN_CAMERA_AND_FRONT;
+        pixelPerInch = 387.3323675/distanceFromTarget;
         if(sizeSelected == 1){
             computeDistanceIfOnlyOneRectangle(pixelPerInch, averageDistanceToCenter);
         }
@@ -152,8 +152,9 @@ public class VisionProcessor implements VisionPipeline {
 
         System.out.println("INDEX INPUT:"+lockTracker.getSelectedIndex());
         System.out.println("Number of Rectangles:"+lockTracker.getExpectRect());
+        System.out.println("TARGET LOCK:" + lockTracker.isTargetLockOn(ok.size()));
 
-        if(lockTracker.isTargetLockOn(ok.size())){
+        if(ok.size()>1){
             selected = new FinalVisionTargetFilter().filter(ok, lockTracker.getSelectedIndex());
             System.out.println("RECT1:" + selected.get(0).angle + "RECT2:" + selected.get(1).angle);
         }
@@ -197,12 +198,8 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public double getLateralDistance() {
-        if(sizeSelected == 2){
         return lateralDistance;
-        }
-        else{
-            return UNKNOWN;
-        }
+        
     }
 
     public void drawRectanglesOnImage(Mat img, List<RotatedRect> rectangles, Scalar color, boolean targetLock) {
@@ -219,14 +216,14 @@ public class VisionProcessor implements VisionPipeline {
     }
 
     public void targetLockDraw(Mat img, Point center, Scalar color) {
-            Imgproc.line(img, new Point(center.x, center.y + 5), new Point(center.x, center.y - 5), color, 1);
-            Imgproc.line(img, new Point(center.x + 5, center.y), new Point(center.x - 5, center.y), color, 1);
+            Imgproc.line(img, new Point(center.x, center.y + 20), new Point(center.x, center.y - 20), color, 3);
+            Imgproc.line(img, new Point(center.x + 20, center.y), new Point(center.x - 20, center.y), color, 3);
             Imgproc.circle(img, center, 3, color);
     }
 
     public void putOutputTextOnFrame(Mat img) {
         Imgproc.putText(img, String.format("lateralDistance: %.2f", lateralDistance), new Point(30, 60), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
-        Imgproc.putText(img, String.format("Distance: %.2f", distanceFromTarget), new Point(30, 90), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
+        Imgproc.putText(img, String.format("Distance to targets: %.2f", distanceFromTarget), new Point(30, 90), Core.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
     }
 
     public ArrayList<RotatedRect> minimumBoundingRectangle(List<MatOfPoint> inputContours) {

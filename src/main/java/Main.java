@@ -95,7 +95,7 @@ public final class Main {
         TargetAlign file = new TargetLockFileChecker();
         TargetAlign targetAlign = new TargetLockMultipleChecker(button, file);
 
-        TargetLockTracker targetLockTracker = new TargetLockTracker(button);
+        TargetLockTracker targetLockTracker = new TargetLockTracker(targetAlign);
         VisionProcessor processor = new VisionProcessor(new GripPipeline(timer),timer, targetLockTracker);
 
         CvSink sink = new CvSink("From Camera");

@@ -15,7 +15,7 @@ import org.opencv.core.RotatedRect;
 public class GibberishRectangleFilter{
 
     public static double MIN_DIMENSION = 2;
-    public static double MIN_ASPECT_RATIO = 2.25;
+    public static double MIN_ASPECT_RATIO = 1.4;
     public static double MAX_ASPECT_RATIO = 8;    
     /*
     
