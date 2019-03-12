@@ -69,6 +69,7 @@ public final class Main {
         NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
         ntinst.startClientTeam(TEAM);
         ntinst.startClient();
+        ntinst.setUpdateRate(0.02);
 
 
 
