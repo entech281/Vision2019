@@ -22,8 +22,21 @@ public class VisionReporter {
 
 
     public void reportDistance(double distanceToTarget, double lateralDistance, long count, boolean foundTargetBoolean) {
-        distance.forceSetDouble(distanceToTarget);
-        lateral.forceSetDouble(lateralDistance);
+        boolean validDistanceToTarget = true;
+        boolean validLateral = true;
+        if(Double.isNaN(distanceToTarget) || Double.isInfinite(distanceToTarget)){
+            validDistanceToTarget = false;
+        }
+        if(Double.isNaN(lateralDistance) || Double.isInfinite(lateralDistance)){
+            validLateral = false;
+            
+        }
+        if(validDistanceToTarget){
+            distance.forceSetDouble(distanceToTarget);
+        }
+        if(validLateral){
+            lateral.forceSetDouble(lateralDistance);
+        }
         frameCount.forceSetDouble(count);
         foundTarget.forceSetBoolean(foundTargetBoolean);
     }
