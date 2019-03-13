@@ -75,6 +75,7 @@ public final class Main {
         TimeTracker timer = new TimeTracker();
         timer.setEnabled(true);
         MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 1183);
+        MjpegServer driverVideoServer = new MjpegServer("driver_station_server", 1184);
         CvSource cvsource = new CvSource("processed",
                 VideoMode.PixelFormat.kMJPEG,
                 CameraConstants.PROCESS_WIDTH,
@@ -82,10 +83,13 @@ public final class Main {
 
  
         UsbCamera source = new UsbCamera("PiCamera", "/dev/video0");
+        UsbCamera driverStation = new UsbCamera("DriverStationCamera", "/dev/video1");
 
         boolean success = source.setConfigJson(configFileText);
+        driverStation.setVideoMode(VideoMode.PixelFormat.kMJPEG, 320, 240, 100);
         System.out.println("Camera Configured: " + success);
         rawVideoServer.setSource(cvsource);
+        driverVideoServer.setSource(driverStation);
 
         VisionReporter reporter = new VisionReporter();
         PeriodicReporter consoleReporter = new PeriodicReporter(2000);
