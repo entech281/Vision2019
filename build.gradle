@@ -1,12 +1,12 @@
 plugins {
     id 'java'
     id 'application'
+
     id 'com.github.johnrengelman.shadow' version '4.0.3' apply false
-	  id 'org.hidetake.ssh' version '2.9.0'
+    id 'org.hidetake.ssh' version '2.9.0'
 }
 
 mainClassName = 'Main'
-
 
 
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -34,10 +34,10 @@ remotes {
 dependencies {
     compile 'com.google.code.gson:gson:2.8.5'
 
-    compile name: 'wpiutil'
-    compile name: 'ntcore'
-    compile name: 'cscore'
-    compile name: 'cameraserver'
+    compile name: 'wpiutil-java-2019.4.1'
+    compile name: 'ntcore-java-2019.4.1'
+    compile name: 'cscore-java-2019.4.1'
+    compile name: 'cameraserver-java-2019.4.1'
     compile name: 'opencv-344'
 
     testCompile 'junit:junit:4.12'

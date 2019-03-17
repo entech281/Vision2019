@@ -18,6 +18,7 @@ import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import frc.robot.CameraConstants;
@@ -57,6 +58,21 @@ public final class Main {
         return new String(encoded, encoding);
     }
 
+    private static void setupDriverStationCamera(){
+        CameraServer cameraServer = CameraServer.getInstance();
+        MjpegServer server = new MjpegServer("driver_camera_server", 1184);
+        UsbCamera camera = new UsbCamera("DriverCamera", "/dev/video1"); 
+        cameraServer.addCamera(camera);
+
+        camera.setExposureManual(1);
+        camera.setBrightness(50);
+        server.setSource(camera);
+        server.getProperty("compression").set(20);
+        server.getProperty("default_compression").set(20);
+        server.setResolution(320, 240);
+
+    }
+    
     public static void main(String... args) throws IOException {
 
         if (args.length > 0) {
@@ -69,10 +85,10 @@ public final class Main {
         NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
         ntinst.startClientTeam(TEAM);
         ntinst.startClient();
-        ntinst.setUpdateRate(0.02);
+        ntinst.setUpdateRate(0.05);
 
-
-
+        setupDriverStationCamera();
+        
         TimeTracker timer = new TimeTracker();
         timer.setEnabled(true);
         MjpegServer rawVideoServer = new MjpegServer("raw_video_server", 1183);
